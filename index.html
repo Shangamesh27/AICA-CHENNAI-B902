@@ -105,8 +105,6 @@ button {font:inherit;cursor:pointer;border:1px solid #d5d9e2;border-radius:8px;p
 button:disabled {opacity:.6;cursor:wait;}
 #status {text-align:center;color:#667085;margin:24px 0;}
 .card h2 {overflow-wrap:anywhere;}
-.upload-help {margin-top:36px;color:#4b5563;line-height:1.6;}
-.upload-help summary {cursor:pointer;font-weight:bold;}
 </style>
 </head>
 <body>
@@ -122,14 +120,14 @@ button:disabled {opacity:.6;cursor:wait;}
 <main class="container">
   <input class="search" id="search"
     type="search"
-    placeholder="Search projects..."
+    placeholder="Search projects or contributors..."
     aria-label="Search projects">
 
   <div class="toolbar"><button id="refresh" type="button">Refresh projects</button></div>
 <p id="status" role="status" aria-live="polite">Loading uploaded projects...</p>
 <section class="grid" id="projects" aria-label="Uploaded projects"></section>
 <noscript>Please enable JavaScript to view uploaded projects.</noscript>
-<details class="upload-help"><summary>How to add an app</summary><p>Upload an HTML file, for example <strong>My App.html</strong>, to the apps folder in GitHub. You can also upload a separate folder for each project. The project name comes from the HTML filename, or the folder name when the file is named index.html.</p><p>Keep existing project files when adding new ones, then select Refresh projects. New apps may take a few minutes to become available after upload.</p></details>
+
 </main>
 
 <footer>
@@ -153,14 +151,19 @@ const directory = path => path.includes('/') ? path.slice(0, path.lastIndexOf('/
 const stem = path => filename(path).replace(/\.[^.]+$/, '').trim();
 function discover(files) {
   return files.filter(path => /\.html?$/i.test(path) && !/^index\.html?$/i.test(path)).map(app => {
-    const name = /^index$/i.test(stem(app)) ? filename(directory(app)) : stem(app);
-    return {name: name.replace(/[_-]+/g, ' ').trim(), app};
+    // File naming: App Name__CA Name.html (two underscores).
+    // For index.html, use the same convention for the containing folder.
+    const label = /^index$/i.test(stem(app)) ? filename(directory(app)) : stem(app);
+    const separator = label.indexOf('__');
+    const title = separator > 0 ? label.slice(0, separator) : label;
+    const contributor = separator > 0 ? label.slice(separator + 2).replace(/_/g, ' ').trim() : '';
+    return {name: title.replace(/[_-]+/g, ' ').trim(), contributor, app};
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 function render() {
   gallery.replaceChildren();
   const term = search.value.trim().toLowerCase();
-  const filtered = projects.filter(project => project.name.toLowerCase().includes(term));
+  const filtered = projects.filter(project => (project.name + ' ' + project.contributor).toLowerCase().includes(term));
   for (const project of filtered) {
     const card = document.createElement('article');
     card.className = 'card';
@@ -169,6 +172,12 @@ function render() {
     const title = document.createElement('h2');
     title.textContent = project.name;
     head.append(title);
+    if (project.contributor) {
+      const creator = document.createElement('p');
+      creator.className = 'creator';
+      creator.textContent = 'Contributed by: ' + project.contributor;
+      head.append(creator);
+    }
     const actions = document.createElement('div');
     actions.className = 'card-actions';
     const link = document.createElement('a');
