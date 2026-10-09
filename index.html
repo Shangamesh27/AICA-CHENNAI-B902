@@ -67,7 +67,7 @@ h1 {
 }
 .card-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
   padding: 20px 24px;
   border-top: 1px solid #e2e5eb;
@@ -84,10 +84,6 @@ h1 {
 .app {
   background: #5947dd;
   color: white;
-}
-.prompt {
-  background: #e5e7eb;
-  color: #253047;
 }
 .btn:hover { opacity: 0.85; }
 footer {
@@ -133,7 +129,7 @@ button:disabled {opacity:.6;cursor:wait;}
 <p id="status" role="status" aria-live="polite">Loading uploaded projects...</p>
 <section class="grid" id="projects" aria-label="Uploaded projects"></section>
 <noscript>Please enable JavaScript to view uploaded projects.</noscript>
-<details class="upload-help"><summary>How to add an app and prompt</summary><p>Upload matching files to the apps folder in GitHub, for example <strong>My App.html</strong> and <strong>My App.txt</strong>. You can also put one HTML app and a <strong>Prompt.txt</strong> file together in a separate project folder. Names appear automatically after both files are uploaded. Markdown (.md) prompts are also supported.</p><p>Keep existing project files when adding new ones, then select Refresh projects. New apps may take a few minutes to become available after upload.</p></details>
+<details class="upload-help"><summary>How to add an app</summary><p>Upload an HTML file, for example <strong>My App.html</strong>, to the apps folder in GitHub. You can also upload a separate folder for each project. The project name comes from the HTML filename, or the folder name when the file is named index.html.</p><p>Keep existing project files when adding new ones, then select Refresh projects. New apps may take a few minutes to become available after upload.</p></details>
 </main>
 
 <footer>
@@ -155,20 +151,10 @@ const encodePath = path => path.split('/').map(encodeURIComponent).join('/');
 const filename = path => path.split('/').pop();
 const directory = path => path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
 const stem = path => filename(path).replace(/\.[^.]+$/, '').trim();
-const key = name => name.trim().toLowerCase().replace(/[ _-]+/g, ' ');
 function discover(files) {
-  const apps = files.filter(path => /\.html?$/i.test(path) && !/^index\.html?$/i.test(path));
-  const prompts = files.filter(path => /\.(txt|md)$/i.test(path) && !/^readme\./i.test(filename(path)));
-  return apps.flatMap(app => {
-    const folder = directory(app);
-    const sameFolder = prompts.filter(path => directory(path) === folder);
-    let matches = sameFolder.filter(path => key(stem(path)) === key(stem(app)));
-    if (!matches.length) matches = sameFolder.filter(path => key(stem(path)) === key(stem(app)) + ' prompt');
-    if (!matches.length && apps.filter(path => directory(path) === folder).length === 1)
-      matches = sameFolder.filter(path => /^prompts?$/i.test(stem(path)));
-    if (matches.length !== 1) return [];
-    const name = /^index$/i.test(stem(app)) ? filename(folder) : stem(app);
-    return [{name: name.replace(/[_-]+/g, ' ').trim(), app, prompt: matches[0]}];
+  return files.filter(path => /\.html?$/i.test(path) && !/^index\.html?$/i.test(path)).map(app => {
+    const name = /^index$/i.test(stem(app)) ? filename(directory(app)) : stem(app);
+    return {name: name.replace(/[_-]+/g, ' ').trim(), app};
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 function render() {
@@ -185,23 +171,18 @@ function render() {
     head.append(title);
     const actions = document.createElement('div');
     actions.className = 'card-actions';
-    for (const [label, style, href] of [
-      ['View App', 'app', site + encodePath(project.app)],
-      ['View Prompt', 'prompt', 'https://github.com/' + repository + '/blob/' + branch + '/' + encodePath(project.prompt)]
-    ]) {
-      const link = document.createElement('a');
-      link.className = 'btn ' + style;
-      link.textContent = label;
-      link.href = href;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.setAttribute('aria-label', label + ': ' + project.name);
-      actions.append(link);
-    }
+    const link = document.createElement('a');
+    link.className = 'btn app';
+    link.textContent = 'View App';
+    link.href = site + encodePath(project.app);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.setAttribute('aria-label', 'View App: ' + project.name);
+    actions.append(link);
     card.append(head, actions);
     gallery.append(card);
   }
-  status.textContent = !projects.length ? 'No projects yet. Projects appear after an HTML app and its matching prompt are uploaded.' :
+  status.textContent = !projects.length ? 'No projects yet. Projects appear after an HTML app is uploaded.' :
     !filtered.length ? 'No projects match your search.' : filtered.length + (filtered.length === 1 ? ' project' : ' projects');
 }
 async function loadProjects() {
