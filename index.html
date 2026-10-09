@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
+<title>Chennai AiCA | Project Showcase</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f8f9fb;
+  color: #171c2c;
+}
+header {
+  text-align: center;
+  padding: 48px 20px 25px;
+}
+h1 {
+  font-size: clamp(30px, 4vw, 52px);
+  margin: 0 0 12px;
+}
+.subtitle {
+  font-size: 19px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+.container {
+  max-width: 1450px;
+  margin: auto;
+  padding: 25px 30px 60px;
+}
+.search {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 15px auto 35px;
+  padding: 14px;
+  font-size: 16px;
+  border: 1px solid #d5d9e2;
+  border-radius: 9px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.card {
+  background: white;
+  border: 1px solid #e2e5eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.card-head {
+  padding: 24px;
+  min-height: 125px;
+}
+.card h2 {
+  margin: 0 0 14px;
+  font-size: 22px;
+}
+.creator {
+  color: #667085;
+  font-size: 14px;
+}
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 20px 24px;
+  border-top: 1px solid #e2e5eb;
+  background: #fafbfc;
+}
+.btn {
+  display: block;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: 7px;
+  text-decoration: none;
+  font-weight: bold;
+}
+.app {
+  background: #5947dd;
+  color: white;
+}
+.prompt {
+  background: #e5e7eb;
+  color: #253047;
+}
+.btn:hover { opacity: 0.85; }
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #667085;
+  border-top: 1px solid #e5e7eb;
+}
+@media(max-width: 950px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  .container { padding: 20px; }
+  .card-head { min-height: auto; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chennai AiCA - Project Showcase</h1>
+  <p class="subtitle">
+    A Showcase of AI-Powered Web Applications<br>
+    Developed by Chennai AiCA Batch Members
+  </p>
+</header>
+
+<main class="container">
+  <input class="search" id="search"
+    type="search"
+    placeholder="Search projects or creators..."
+    aria-label="Search projects">
+
+  <section class="grid" id="projects">
+
+    <article class="card">
+      <div class="card-head">
+        <h2>Income Tax Calculator</h2>
+        <p class="creator">Created by: Member 1</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn app" href="#"
+           onclick="return false;">View App</a>
+        <a class="btn prompt" href="#"
+           onclick="return false;">View Prompt</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <h2>Document Comparison Tool</h2>
+        <p class="creator">Created by: Member 2</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn app" href="#"
+           onclick="return false;">View App</a>
+        <a class="btn prompt" href="#"
+           onclick="return false;">View Prompt</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <h2>GST Reconciliation Tool</h2>
+        <p class="creator">Created by: Member 3</p>
+      </div>
+      <div class="card-actions">
+        <a class="btn app" href="#"
+           onclick="return false;">View App</a>
+        <a class="btn prompt" href="#"
+           onclick="return false;">View Prompt</a>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<footer>
+  Chennai AiCA Batch | AI Project Showcase
+</footer>
+
+<script>
+const search = document.getElementById("search");
+search.addEventListener("input", function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(card => {
+    card.style.display =
+      card.textContent.toLowerCase().includes(term)
+        ? "" : "none";
+  });
+});
+</script>
+
+</body>
+</html>
