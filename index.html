@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1">
-<title>Chennai AICA B902 | Project Showcase</title>
+<title>Chennai AICA _ Member Projects</title>
 <style>
 * { box-sizing: border-box; }
 body {
@@ -67,7 +67,7 @@ h1 {
 }
 .card-actions {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   padding: 20px 24px;
   border-top: 1px solid #e2e5eb;
@@ -85,6 +85,7 @@ h1 {
   background: #5947dd;
   color: white;
 }
+.download { background: #eef0ff; color: #4434b5; border: 1px solid #5947dd; }
 .btn:hover { opacity: 0.85; }
 footer {
   text-align: center;
@@ -110,7 +111,7 @@ button:disabled {opacity:.6;cursor:wait;}
 <body>
 
 <header>
-  <h1>Chennai AiCA - Project Showcase</h1>
+  <h1>Chennai AICA _ Member Projects</h1>
   <p class="subtitle">
     A Showcase of AI-Powered Web Applications<br>
     Developed by Chennai AiCA Batch Members
@@ -120,7 +121,7 @@ button:disabled {opacity:.6;cursor:wait;}
 <main class="container">
   <input class="search" id="search"
     type="search"
-    placeholder="Search projects or contributors..."
+    placeholder="Search projects..."
     aria-label="Search projects">
 
   <div class="toolbar"><button id="refresh" type="button">Refresh projects</button></div>
@@ -187,7 +188,13 @@ function render() {
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.setAttribute('aria-label', 'View App: ' + project.name);
-    actions.append(link);
+    const download = document.createElement('a');
+    download.className = 'btn download';
+    download.textContent = 'Download';
+    download.href = link.href;
+    download.download = filename(project.app);
+    download.setAttribute('aria-label', 'Download: ' + project.name);
+    actions.append(link, download);
     card.append(head, actions);
     gallery.append(card);
   }
