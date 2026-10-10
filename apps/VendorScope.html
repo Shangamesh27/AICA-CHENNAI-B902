@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>VendorScope</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%2313303D'/%3E%3Ccircle cx='17' cy='17' r='10' fill='none' stroke='%23C9A46A' stroke-width='3'/%3E%3Cpath d='M25 25l8 8' stroke='%23C9A46A' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ===== VENDORSCOPE DESIGN SYSTEM =====
+   Fjord ink masthead + warm paper + brass accent. Serif for titles and figures, sans for the interface. */
+:root{--bg:#F5F4F0;--card:#FFFFFF;--sub:#FAF9F6;--ink:#22201C;--mute:#6A655D;--line:#E6E3DC;--line2:#D6D2C9;
+--acc:#1D4B60;--acc-t:#E3ECF0;--acc-i:#173B4C;--onacc:#FFFFFF;
+--hi:#B9503F;--hi-t:#F7E5E0;--hi-i:#8A3427;--hi2:#C27B4A;--md:#B0802A;--md-t:#F5EAD3;--md-i:#744F10;--lo:#5A8567;--lo-t:#E2EDE5;--lo-i:#3B664A;
+--mast:#13303D;--brass:#C9A46A;--rule:#d9d4c9;
+--ease:cubic-bezier(.32,.72,0,1);--serif:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Inter,"Segoe UI",system-ui,sans-serif;--sans:-apple-system,"SF Pro Display",Inter,"Segoe UI",Roboto,sans-serif}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#2A2D33;--card:#343841;--sub:#2F3238;--ink:#F1EEE8;--mute:#BDB8AE;--line:#464B54;--line2:#585E68;
+--acc:#A8D3E2;--acc-t:#3B5764;--acc-i:#D6ECF5;--onacc:#10303B;
+--hi:#F2988D;--hi-t:#4C3533;--hi-i:#F6B9B0;--hi2:#EDAA7A;--md:#E5B96A;--md-t:#4B412C;--md-i:#EECF93;--lo:#9AC6A7;--lo-t:#33443B;--lo-i:#BADCC4;
+--mast:#1F3441;--brass:#D4B27A;--rule:#4a5560}}
+:root[data-theme=dark]{--bg:#2A2D33;--card:#343841;--sub:#2F3238;--ink:#F1EEE8;--mute:#BDB8AE;--line:#464B54;--line2:#585E68;
+--acc:#A8D3E2;--acc-t:#3B5764;--acc-i:#D6ECF5;--onacc:#10303B;
+--hi:#F2988D;--hi-t:#4C3533;--hi-i:#F6B9B0;--hi2:#EDAA7A;--md:#E5B96A;--md-t:#4B412C;--md-i:#EECF93;--lo:#9AC6A7;--lo-t:#33443B;--lo-i:#BADCC4;
+--mast:#1F3441;--brass:#D4B27A;--rule:#4a5560}
+*{box-sizing:border-box}
+html{scroll-padding-top:150px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.col{max-width:960px;margin:0 auto;padding:0 28px}
+main.col{padding-top:8px;padding-bottom:120px}
+/* masthead */
+#hd{position:sticky;top:0;z-index:30;background:var(--mast);color:#E9EFF2;box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.mastrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0 6px;transition:padding .35s var(--ease)}
+#hd.compact .mastrow{padding:10px 0 2px}
+.brand{display:flex;align-items:center;gap:13px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0;text-align:left}
+.logo{flex:none;transition:transform .35s var(--ease)}#hd.compact .logo{transform:scale(.82)}
+.lr{stroke-dasharray:73;animation:draw 1.2s var(--ease) both}@keyframes draw{from{stroke-dashoffset:73}to{stroke-dashoffset:0}}
+.wm{display:flex;flex-direction:column;line-height:1.1}
+.wm b{font:600 24px/1.1 -apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Inter","Segoe UI",system-ui,sans-serif;letter-spacing:-.022em;color:#F7F4EC;-webkit-font-smoothing:antialiased}
+.wm small{font-size:12px;color:#9FB5C1;margin-top:3px;max-height:16px;overflow:hidden;transition:max-height .3s var(--ease),opacity .25s,margin .3s}
+#hd.compact .wm small{max-height:0;opacity:0;margin:0}
+#theme{background:transparent;border:1px solid rgba(255,255,255,.22);color:#C9D7DE;border-radius:8px;padding:5px 12px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap;flex:none}
+#theme:hover{border-color:var(--brass);color:#fff}
+nav{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+nav button{flex:0 0 auto;border:0;background:none;padding:12px 15px 11px;color:#A9BCC6;font:inherit;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;transition:color .25s var(--ease),border-color .25s var(--ease)}
+nav button:hover{color:#fff}nav button.on{color:#fff;font-weight:600;border-bottom-color:var(--brass)}
+#hd button:focus-visible{outline:2px solid var(--brass);outline-offset:-2px;border-radius:6px}
+button:focus-visible,select:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible,.drop:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* page head */
+.vh{padding:44px 0 26px;border-bottom:1px solid var(--rule);margin-bottom:28px}
+.vh h1{font:600 36px/1.12 var(--serif);letter-spacing:-.028em;margin:0;max-width:24ch;-webkit-font-smoothing:antialiased}
+.vh p{color:var(--mute);margin:12px 0 0;max-width:62ch;font-size:15.5px}
+.vh.wide h1{max-width:24ch}
+/* surfaces: hairline, no stacked shadows */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:16px}
+.ct{display:block;font:600 13px var(--sans);color:var(--mute);margin-bottom:16px;letter-spacing:.01em}
+.drop{position:relative;border:1px solid var(--line2);border-radius:14px;padding:58px 28px;text-align:center;cursor:pointer;background:var(--card);overflow:hidden;transition:border-color .3s var(--ease),background .3s var(--ease)}
+.drop::before{content:"";position:absolute;right:-40px;bottom:-60px;width:220px;height:220px;border:22px solid var(--acc-t);border-radius:50%;opacity:.7;pointer-events:none}
+.drop::after{content:"";position:absolute;right:-70px;bottom:-96px;width:90px;height:20px;background:var(--acc-t);border-radius:10px;transform:rotate(-45deg);opacity:.7;pointer-events:none}
+.drop b{display:block;font:600 21px var(--serif);margin-bottom:6px;position:relative}.drop span{color:var(--mute);position:relative}.drop.over{border-color:var(--acc);background:var(--acc-t)}
+.btn{border:1px solid var(--acc);background:var(--acc);color:var(--onacc);padding:10px 20px;border-radius:9px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:transform .2s var(--ease),filter .2s}.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2);font-weight:500}.btn.ghost:hover{border-color:var(--acc);filter:none}
+.btn.sm{padding:6px 13px;font-size:13px;border-radius:8px}
+/* KPIs: serif numerals on a ruled strip */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.kpi{padding:26px 28px;border:0;border-right:1px solid var(--line);cursor:pointer;background:none;text-align:left;font:inherit;color:inherit;transition:background .2s var(--ease)}.kpi:last-child{border-right:0}.kpi:hover{background:var(--sub)}
+.kpi b{display:block;font:600 46px/1 var(--serif);letter-spacing:-.04em;font-variant-numeric:tabular-nums}.kpi span{display:block;margin-top:10px;color:var(--mute);font-size:13px}.kpi.hi b{color:var(--hi)}
+.runnote{color:var(--mute);font-size:12.5px;margin:0 0 22px 2px}
+@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.kpi:nth-child(2){border-right:0}.kpi:nth-child(-n+2){border-bottom:1px solid var(--line)}.col{padding:0 18px}.vh h1{font-size:30px}.vh{padding:30px 0 20px}.kpi b{font-size:40px}}
+/* bars, donut */
+.bar{display:grid;grid-template-columns:96px 1fr 40px;align-items:center;gap:14px;margin:4px 0;padding:6px 6px;border-radius:8px;font-size:14px;width:100%;background:none;border:0;color:var(--ink);font-family:inherit;text-align:left}
+.bar.clk{cursor:pointer}.bar.clk:hover{background:var(--sub)}
+.bar em{font-style:normal}.bar .trk{height:6px;border-radius:99px;background:var(--line)}.bar .trk i{display:block;height:100%;border-radius:99px;background:var(--acc);transition:width .7s var(--ease)}
+.bar b{text-align:right;font-weight:600}.bar.Critical .trk i{background:var(--hi)}.bar.High .trk i{background:var(--hi2)}.bar.Medium .trk i{background:var(--md)}.bar.Low .trk i{background:var(--lo)}.bar.sevHigh .trk i{background:var(--hi)}.bar.sevMedium .trk i{background:var(--md)}.bar.sevLow .trk i,.bar.sevInfo .trk i{background:var(--lo)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.two>.card{margin-bottom:0}@media(max-width:760px){.two{grid-template-columns:1fr}}
+.donutwrap{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.seg-c{cursor:pointer;transition:opacity .2s}.seg-c:hover{opacity:.8}.seg-c.Critical{stroke:var(--hi)}.seg-c.High{stroke:var(--hi2)}.seg-c.Medium{stroke:var(--md)}.seg-c.Low{stroke:var(--lo)}
+.dn{font:600 28px var(--serif);fill:var(--ink)}.dl{font-size:11px;fill:var(--mute)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:9px}.sw.Critical{background:var(--hi)}.sw.High{background:var(--hi2)}.sw.Medium{background:var(--md)}.sw.Low{background:var(--lo)}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center}
+.chip{border:1px solid var(--line2);background:var(--card);color:var(--mute);padding:6px 13px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer;transition:all .2s var(--ease)}
+.chip:hover{border-color:var(--acc);color:var(--ink)}.chip.on{background:var(--acc-t);border-color:var(--acc);color:var(--acc-i);font-weight:600}
+/* rows */
+details.row,.rowbtn{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;padding:13px 18px}
+details.row[open]{border-color:var(--line2)}summary{cursor:pointer;display:flex;gap:14px;align-items:center;list-style:none}summary::-webkit-details-marker{display:none}
+summary::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--mute);border-bottom:1.5px solid var(--mute);transform:rotate(45deg);margin:-3px 2px 0 4px;flex:none;transition:transform .3s var(--ease)}details[open]>summary::after{transform:rotate(225deg);margin-top:3px}
+.rowbtn{display:flex;gap:14px;align-items:center;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:border-color .2s}.rowbtn:hover{border-color:var(--acc)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}.dot.High{background:var(--hi)}.dot.Medium{background:var(--md)}.dot.Low,.dot.Info{background:var(--lo)}
+.vn{display:flex;flex-direction:column;min-width:0;flex:1}.vn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.vn small{color:var(--mute);font-size:12.5px}
+.pill{font-size:12.5px;font-weight:600;border-radius:6px;padding:2px 10px;flex:none;border:1px solid transparent;min-width:42px;text-align:center}
+.pill.Critical{background:var(--hi-t);color:var(--hi-i);border-color:var(--hi)}.pill.High{background:var(--hi-t);color:var(--hi-i)}.pill.Medium{background:var(--md-t);color:var(--md-i)}.pill.Low{background:var(--lo-t);color:var(--lo-i)}
+.xl{display:flex;gap:12px;align-items:flex-start;padding:11px 4px;border-top:1px solid var(--line);font-size:14px;cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font-family:inherit;color:inherit}
+.xl:hover b{color:var(--acc)}.xl .dot{margin-top:7px}.xl small{display:block;color:var(--mute);font-size:13px}
+.why{color:var(--mute);margin:10px 0 0;font-size:14px}
+.tag{font-size:12px;color:var(--mute);background:var(--sub);border:1px solid var(--line);border-radius:6px;padding:1px 8px;white-space:nowrap}
+.note{color:var(--mute);font-size:12.5px;margin-top:36px;padding-top:18px;border-top:1px solid var(--rule);max-width:76ch}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:6px}.map label{font-size:12.5px;color:var(--mute);display:block;margin-bottom:4px}
+.mgt{font:600 13px var(--sans);color:var(--mute);margin:22px 0 10px}
+.hide{display:none}
+.rowh{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.rowh>b{font:600 17px var(--serif)}
+.fr{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}.fr:first-of-type{border-top:0}
+/* controls */
+select,textarea,input:not([type=checkbox]){font:inherit;font-size:14px;color:var(--ink);background:var(--sub);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;max-width:100%}
+select{appearance:none;-webkit-appearance:none;padding-right:30px;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.map select,.map input{width:100%}textarea{width:100%;resize:vertical}input[type=checkbox]{accent-color:var(--acc)}
+/* skeleton shimmer */
+.sk{height:16px;border-radius:8px;margin:12px 0;background:linear-gradient(90deg,var(--line) 25%,var(--sub) 50%,var(--line) 75%);background-size:200% 100%;animation:sh 1.3s linear infinite}@keyframes sh{to{background-position:-200% 0}}
+/* Insights rail */
+#rail{position:fixed;top:0;right:0;height:100%;width:400px;max-width:100%;transform:translateX(105%);transition:transform .45s var(--ease);background:var(--sub);border-left:1px solid var(--line2);overflow:auto;padding:24px 22px 44px;z-index:35;box-shadow:-18px 0 40px -28px rgba(0,0,0,.45)}#rail.open{transform:none}
+#rail .rowh b{font:600 18px var(--serif)}
+#rail details.row{padding:12px 15px}#rail select{padding:5px 26px 5px 9px;font-size:13px}#rail .why{margin-left:0}
+@media(max-width:700px){#rail{top:auto;bottom:0;width:100%;height:78%;transform:translateY(105%);border-radius:18px 18px 0 0;border-left:0;border-top:1px solid var(--line2)}}
+@media(min-width:701px){body.rail .col{margin:0 420px 0 auto;max-width:min(960px,calc(100vw - 440px))}.col{transition:margin .45s var(--ease),max-width .45s var(--ease)}}
+#bm{position:fixed;right:22px;bottom:22px;z-index:36;border-radius:10px;padding:12px 20px;background:var(--mast);border-color:var(--mast);color:#F2EEE4;box-shadow:0 10px 28px -10px rgba(10,30,40,.6)}#bm::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--brass);margin-right:9px}body.rail #bm{display:none}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.urn{font:600 30px var(--serif);letter-spacing:.02em;margin:18px 0 10px}
+@keyframes inR{from{opacity:0;transform:translateX(24px)}}.slide{animation:inR .35s var(--ease)}
+/* bottom sheet */
+#sheet{position:fixed;inset:0;z-index:50;visibility:hidden}#sheet.open{visibility:visible}
+#sheet .sb{position:absolute;inset:0;background:rgba(8,20,28,.5);opacity:0;transition:opacity .35s var(--ease)}#sheet.open .sb{opacity:1}
+#sheet .sp{position:absolute;left:50%;bottom:0;transform:translate(-50%,100%);width:min(680px,100%);max-height:84%;overflow:auto;background:var(--card);border-radius:18px 18px 0 0;padding:28px 28px 34px;transition:transform .45s var(--ease);box-shadow:0 -12px 44px rgba(0,0,0,.3)}#sheet.open .sp{transform:translate(-50%,0)}
+#sheet h2{margin:0 0 4px;font:600 23px var(--serif);letter-spacing:-.022em}
+.err{border-color:var(--hi)!important;color:var(--hi-i)}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--mast);color:#F2EEE4;padding:11px 20px;border-radius:10px;opacity:0;transition:all .35s var(--ease);z-index:60;pointer-events:none;font-size:14px;max-width:90vw;border-left:3px solid var(--brass)}#toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{#hd,#bm,#rail,#sheet,.noprint,.vh{display:none!important}main>section:not(#v-trail){display:none!important}#v-trail{display:block!important}body{background:#fff;color:#000}details.row{break-inside:avoid}}
+
+.mr{display:flex;align-items:center;gap:10px;flex:none}
+.mbtn{display:inline-flex;align-items:center;gap:7px;background:var(--brass);color:#13303D;border:1px solid var(--brass);border-radius:8px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:filter .2s var(--ease),transform .2s var(--ease)}
+.mbtn:hover:not(:disabled){filter:brightness(1.08)}.mbtn:active:not(:disabled){transform:scale(.97)}
+.mbtn:disabled{background:transparent;border-color:rgba(255,255,255,.18);color:#7F95A1;cursor:not-allowed}
+.drop.has{padding:26px 28px;text-align:left}
+.fcard{display:flex;align-items:center;gap:18px;position:relative;animation:fin .45s var(--ease)}
+.fi{flex:none;display:flex}.ft{display:flex;flex-direction:column;min-width:0;flex:1}
+.ft b{font:600 17px var(--serif);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ft em{font-style:normal;color:var(--mute);font-size:13px;margin-top:3px}
+.fok{display:inline-flex;align-items:center;gap:6px;color:#1F7A4D;background:rgba(31,122,77,.1);border-radius:999px;padding:4px 11px 4px 9px;font-size:12.5px;font-weight:600;flex:none}
+.frp{color:var(--mute);font-size:12.5px;flex:none}
+.fcard.hide{display:none}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:640px){.frp{display:none}.mbtn span{display:none}.mbtn{padding:6px 9px}.drop.has{padding:20px}}
+@media(prefers-reduced-motion:reduce){.fcard{animation:none}}
+
+.drop .ft{color:var(--ink)}.drop .ft em{color:var(--mute)}.drop .fok{color:#1F7A4D}.drop .frp{color:var(--mute)}
+.drop.has::after{display:none}.drop .ft b{display:block;white-space:nowrap}
+@media(max-width:640px){.fcard{gap:12px}.ft em{white-space:normal}}
+.drop.has::before{right:-30px;bottom:-110px;opacity:.45}
+
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;opacity:0;transition:all .35s var(--ease);z-index:60;pointer-events:none;font-size:14px;max-width:90vw}#toast.on{opacity:1;transform:translate(-50%,0)}
+</style></head><body>
+<header id="hd"><div class="col">
+ <div class="mastrow"><button class="brand" id="brand" aria-label="VendorScope, go to Upload"><svg class="logo" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false">
+   <circle class="lr" cx="17" cy="17" r="11.5" fill="none" stroke="var(--brass)" stroke-width="3"/>
+   <path d="M11.5 13.5h11M11.5 17.5h7M11.5 21.5h10" stroke="#F4F1EA" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+   <circle cx="22.6" cy="17.5" r="1.7" fill="#E58C7E"/>
+   <path d="M25.7 25.7 34.2 34.2" stroke="var(--brass)" stroke-width="4.4" stroke-linecap="round"/>
+  </svg><span class="wm"><b>VendorScope</b><small>Vendor Master Assurance</small></span></button><div class="mr"><button id="xl" class="mbtn" disabled aria-label="Export exceptions to Excel"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.8 7.2 8 10.4l3.2-3.2M3 13h10"/></svg><span>Export Excel</span></button><button id="theme" aria-label="Colour theme"></button></div></div>
+ <nav id="nav" aria-label="Sections"></nav>
+</div></header>
+<main class="col">
+<div class="vh" id="vh"><h1 id="vtitle"></h1><p id="vsub"></p></div>
+<div id="err" class="card err hide" role="alert"></div>
+
+<section id="v-upload">
+ <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a vendor master"><b>Drop Vendor Master Here</b><span id="dropsub">.xlsx, .xls or .csv, or click to browse</span><div class="fcard hide" id="fcard"></div><input id="file" type="file" accept=".xlsx,.xls,.csv" hidden></div>
+ <div class="chips" style="margin-top:16px"><button class="btn ghost" id="sample">Load sample data</button><button class="btn ghost" id="tplBlank">Download blank template</button><button class="btn ghost" id="tplOwner">Download process-owner mapping template</button></div>
+ <div id="mapbox" class="card hide"><div class="rowh"><b>Check the column mapping</b><span id="mapnote" class="why" style="margin:0"></span></div><div id="map"></div><p id="unused" class="why"></p>
+  <div class="chips" style="margin:14px 0 0"><button class="btn" id="run">Run validation</button><button class="btn ghost" id="saveprof">Save mapping profile</button></div></div>
+</section>
+
+<section id="v-review" class="hide">
+ <div class="chips"><input id="q" type="search" placeholder="Search vendor name or code" aria-label="Search vendors" style="min-width:260px"><span id="filt" class="chips" style="margin:0"></span></div>
+ <div class="chips" id="chips"></div><div id="list"></div><p><button class="btn ghost hide" id="more">Show more</button></p>
+</section>
+
+<section id="v-dash" class="hide"><div id="dashbody"></div></section>
+
+<section id="v-risk" class="hide"><div class="chips" id="rchips"></div><div id="rlist"></div><p><button class="btn ghost hide" id="rmore">Show more</button></p></section>
+
+<section id="v-udy" class="hide"><div class="chips"><select id="u_cat" aria-label="MSME category"><option value="">All categories</option><option>Micro</option><option>Small</option><option>Medium</option></select><select id="u_band" aria-label="Risk band"><option value="">All risk bands</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><label><input type="checkbox" id="u_pay"> Payment terms above 45 days</label></div><div id="udcard"></div><p class="note">You read the result on the Udyam site yourself and record it here. This tool does not connect to the portal.</p></section>
+
+<section id="v-email" class="hide"><div class="chips"><button class="chip on" id="tabD">Drafts</button><button class="chip" id="tabT">Query tracking</button></div><div id="emails"></div><div id="track" class="hide"></div></section>
+
+<section id="v-trail" class="hide"><div class="chips noprint"><select id="tf" aria-label="Filter by action"></select><label class="why" style="margin:0">From <input type="date" id="tfrom"></label><label class="why" style="margin:0">To <input type="date" id="tto"></label><button class="btn" id="ver">Verify log integrity</button><button class="btn ghost" id="txl">Export Excel</button><button class="btn ghost" id="tprint">Print view</button></div><p id="vres" class="why" style="margin:0 0 14px"></p><div id="tl"></div><p class="note">The audit trail is tamper-evident, not tamper-proof. Export it to the audit working papers.</p></section>
+
+<section id="v-set" class="hide"><div id="setbox"></div></section>
+
+<p class="note">Risk scores are indicative and rule-based. All checks are offline format and logic checks; nothing is verified against the GST, Income Tax or Udyam portals, and Udyam results are recorded by you from a manual check. Section 43B(h), TDS and other statutory references: verify against current law. Supports professional judgement, not legal or tax advice.</p>
+</main>
+<button class="btn" id="bm" aria-label="Open Insights">Insights <span id="bmc"></span></button>
+<aside id="rail" aria-label="Risk and impact insights"></aside>
+<div id="sheet" aria-hidden="true"><div class="sb" data-s="close"></div><div class="sp" id="sheetp" role="dialog" aria-modal="true" aria-label="Details"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Engine source: shared by the Web Worker and the main-thread fallback. Not executed here. -->
+<script type="text/plain" id="engine">
+/* ===== ENGINE: pure validation + scoring. Runs inside a Web Worker (and as a main-thread fallback). No DOM access. ===== */
+const S=x=>String(x==null?'':x);
+const norm=s=>S(s).trim().toUpperCase().replace(/\s+/g,'');
+const nk=s=>S(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+const STOP=['PVT','LTD','PRIVATE','LIMITED','LLP','M','S','MS','AND'];
+const toks=s=>new Set(S(s).toUpperCase().replace(/[^A-Z0-9 ]/g,' ').split(/\s+/).filter(w=>w&&!STOP.includes(w)));
+const sim=(a,b)=>{const A=toks(a),B=toks(b);if(!A.size||!B.size)return 0;let n=0;A.forEach(x=>{if(B.has(x))n++});return n/(A.size+B.size-n)};
+const gstSum=g=>{const c='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';let s=0;for(let i=0;i<14;i++){const p=c.indexOf(g[i])*(i%2?2:1);s+=Math.floor(p/36)+p%36}return c[(36-s%36)%36]};
+const pd=s=>{s=S(s).trim();if(!s)return NaN;if(/^\d{5}$/.test(s))return Math.round((+s-25569)*864e5);const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(m)return Date.UTC(+m[3],+m[2]-1,+m[1]);return Date.parse(s)};
+
+/* score = severity weights + once-per-vendor uplifts, capped at 100. Each factor is recorded for "Why this score?" */
+function scoreAll(EX,n,CFG){
+ const SC=Array.from({length:n},()=>({s:0,f:[]})),ups=new Array(n);
+ for(const e of EX){
+  const x=SC[e.i],w=CFG.sev[e.sev]||0;
+  if(w){x.s+=w;x.f.push([e.type,w])}
+  const d=CFG.R[e.type],u=d&&d.up;
+  if(u&&CFG.uplift[u]){const st=ups[e.i]||(ups[e.i]=new Set());if(!st.has(u)){st.add(u);x.s+=CFG.uplift[u];x.f.push([e.type+' (uplift)',CFG.uplift[u]])}}
+ }
+ for(const x of SC)x.s=Math.min(100,x.s);
+ return SC;
+}
+
+/* P = {rows:[[text...]], map:{field:colIndex}, cfg, now}. Returns {EX, SC}. */
+function runValidation(P){
+ const rows=P.rows,MAP=P.map,CFG=P.cfg,R=CFG.R,now=P.now||Date.now();
+ const ON={};for(const t in R)ON[t]=!CFG.off[t]&&R[t].needs.every(k=>MAP[k]!=null);
+ const EX=[];
+ const add=(i,type,val,why)=>{if(!ON[type])return;const d=R[type];EX.push({i,cat:d.cat,sev:CFG.sevOv[type]||d.sev,type,val:S(val),why})};
+ const has=k=>MAP[k]!=null;
+ const gstCodes=new Set(Object.values(CFG.gstState));
+ const seen={pan:{},gst:{},acct:{}},nameIdx={};
+ const aSets={};for(const k in CFG.allowed){const a=CFG.allowed[k];if(has(k)&&a&&a.length)aSets[k]=new Set(a.map(v=>S(v).trim().toUpperCase()))}
+ const PANRX=/^[A-Z]{5}[0-9]{4}[A-Z]$/,GSTRX=/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,UDRX=/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/;
+ for(let i=0;i<rows.length;i++){
+  const r=rows[i],g=k=>has(k)?S(r[MAP[k]]):'';
+  const name=g('name'),nname=norm(name),pr=g('pan'),pan=norm(pr),gr=g('gstin'),gst=norm(gr),ms=g('msme').trim(),ud=norm(g('udyam')),ac=g('acct').trim(),st=norm(g('state'));
+  const panOK=PANRX.test(pr),panFix=!panOK&&PANRX.test(pan);
+  /* PAN */
+  if(has('pan')){
+   if(!pan)add(i,'PAN missing','','PAN is blank.');
+   else{
+    if(!panOK){if(!panFix)add(i,'PAN malformed',pr,'Does not match AAAAA9999A as entered. The value is checked exactly as recorded; nothing is corrected.')}
+    else{
+     if(!CFG.panTypes.includes(pr[3]))add(i,'PAN 4th character invalid',pr,'4th character '+pr[3]+' is not a valid holder type.');
+     else{
+      for(const t in CFG.panEntity)if(CFG.panEntity[t].some(s=>nname.endsWith(s))&&pr[3]!==t){add(i,'PAN type vs name',pr,'Name suggests type '+t+' but PAN 4th character is '+pr[3]+'.');break}
+      for(const t in CFG.panEntityLow)if(CFG.panEntityLow[t].some(s=>nname.endsWith(s))&&pr[3]!==t){add(i,'PAN type vs name (advisory)',pr,'Name suggests type '+t+' (often a proprietor/firm); PAN 4th character is '+pr[3]+'. Advisory only.');break}
+     }
+    }
+    if(pr.trim()&&pr!==pan)add(i,'Raw formatting defect (PAN)',pr,'Lowercase, spaces or special characters in the raw value.');
+    (seen.pan[pan]=seen.pan[pan]||[]).push(i);
+   }
+  }
+  /* GSTIN */
+  if(has('gstin')&&gst){
+   if(gr.length!==15||!GSTRX.test(gr)){if(!(gst.length===15&&GSTRX.test(gst)))add(i,'GSTIN format invalid',gr,'Length or structure invalid as entered (15 characters, 14th must be Z).')}
+   else{
+    const code=gr.slice(0,2);
+    if(code==='00'||!gstCodes.has(code))add(i,'GST state code invalid',gr,'State code '+code+' is not valid.');
+    if(pr.trim()&&gr.slice(2,12)!==pr)add(i,'PAN-in-GSTIN mismatch',gr,'Characters 3-12 of the GSTIN differ from the PAN.');
+    if(gstSum(gr)!==gr[14])add(i,'GSTIN checksum failure',gr,'Mod-36 check character should be '+gstSum(gr)+'.');
+    if(st&&CFG.gstState[st]&&CFG.gstState[st]!==code)add(i,'GST state vs State',gr,'GSTIN state code '+code+' vs master State '+st+'.');
+   }
+   if(gr.trim()&&gr!==gst)add(i,'Raw formatting defect (GSTIN)',gr,'Lowercase, spaces or special characters in the raw value.');
+   if(!pan&&has('pan'))add(i,'PAN derivable from GSTIN',gr,'PAN is blank; characters 3-12 of the GSTIN give '+gst.slice(2,12)+'.');
+   (seen.gst[gst]=seen.gst[gst]||[]).push(i);
+  }
+  /* MSME / Udyam */
+  const isM=/^(micro|small|medium)$/i.test(ms),udr=g('udyam'),udOK=UDRX.test(udr);
+  if(has('msme')&&!ms)add(i,'MSME category blank','','MSME classification is missing.');
+  if(has('udyam')&&ud){
+   if(!udOK)add(i,'Udyam malformed',udr,'Expected UDYAM-XX-00-0000000 as entered; nothing is corrected.');
+   else{
+    const us=udr.slice(6,8);
+    if(!CFG.gstState[us])add(i,'Udyam state code invalid',ud,'State code '+us+' is not recognised.');
+    else if(st&&us!==st)add(i,'Udyam state vs State',ud,'Udyam state '+us+' vs master State '+st+'. Advisory.');
+   }
+  }
+  if(has('msme')&&has('udyam')){
+   if(isM&&!ud)add(i,'MSME without Udyam',ms,'Category is '+ms+' but the Udyam number is blank.');
+   if(ud&&/^not/i.test(ms))add(i,'Udyam with Not MSME',ud,'Udyam number present but category is Not MSME.');
+  }
+  /* Section 43B(h) payment terms (Micro/Small only; Medium is information) */
+  if(has('msme')&&has('pay')&&isM){
+   const pt=norm(g('pay')),d=CFG.payDays[pt],small=/^(micro|small)$/i.test(ms);
+   if(pt){
+    if(d===undefined){if(small)add(i,'Payment term unmapped',pt,'Code is not in the days map, so 43B(h) cannot be tested. Verify against current law.')}
+    else if(small){
+     if(d>45)add(i,'43B(h) payment term >45 days',pt,d+' days for a '+ms+' vendor. Verify against current law.');
+     else if(d===45)add(i,'43B(h) at limit',pt,'Exactly 45 days: confirm a written agreement exists. Verify against current law.');
+    }else if(d>45)add(i,'43B(h) Medium vendor (info)',pt,d+' days for a Medium vendor. 43B(h) does not apply to Medium; shown for information.');
+   }
+  }
+  /* Bank */
+  if(has('ifsc')){if(!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(g('ifsc')))add(i,'IFSC invalid',g('ifsc'),'Expected AAAA0XXXXXX as entered.')}
+  if(has('acct')){
+   if(!/^\d{9,18}$/.test(ac))add(i,'Bank account invalid',ac,'Digits only, 9 to 18 characters.');
+   if(ac)(seen.acct[ac]=seen.acct[ac]||[]).push(i);
+  }
+  if(has('bankc')&&norm(g('bankc'))!=='IN')add(i,'Bank country not IN',g('bankc'),'Bank country is not India.');
+  if(has('holder')&&has('name')){
+   const h=g('holder').trim();
+   if(!name.trim()||!h)add(i,'Holder/name blank',h,!name.trim()?'Vendor name is blank, so the payee cannot be matched.':'Account holder name is blank.');
+   else if(sim(name,h)<CFG.fuzzy)add(i,'Holder differs from vendor',h,'Payee "'+h+'" does not match the vendor name. Third-party payee risk.');
+  }
+  /* TDS */
+  if(has('tdsCode')){
+   const t=norm(g('tds')),c=norm(g('tdsCode'));
+   if(has('tds')){const p=CFG.tdsPrefix[t];if(p&&c&&!c.startsWith(p))add(i,'TDS section vs code',t+' / '+c,'Code should start with '+p+'. Verify against the ERP withholding-tax configuration.')}
+   if(c&&has('pan')&&!panOK)add(i,'TDS with missing/invalid PAN',c,'Higher-rate TDS risk where PAN is missing or invalid. Verify against current law.');
+   if(c&&panOK&&CFG.tdsEntity[c]&&!CFG.tdsEntity[c].includes(pan[3]))add(i,'TDS code vs PAN entity',c,'Code '+c+' is mapped to PAN types '+CFG.tdsEntity[c].join('/')+' but PAN 4th character is '+pan[3]+'.');
+  }
+  /* Other essentials */
+  if(has('name')&&!name.trim())add(i,'Vendor name blank','','Mandatory field is blank.');
+  if(has('street')&&!g('street').trim())add(i,'Address blank','','Mandatory field is blank.');
+  if(has('pay')&&!g('pay').trim())add(i,'Payment terms blank','','Mandatory field is blank.');
+  if(has('pin')&&!/^\d{6}$/.test(g('pin').trim()))add(i,'PIN invalid',g('pin'),'PIN must be 6 digits.');
+  if(has('email')&&g('email').trim()&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g('email').trim()))add(i,'Vendor email invalid',g('email'),'Not a valid email format.');
+  if(has('phone')&&g('phone').trim()&&!/^\+91-?\d{10}$/.test(g('phone').trim()))add(i,'Phone invalid',g('phone'),'Expected +91 followed by 10 digits.');
+  if(has('searchTerm')&&has('name')){const ex=name.trim().toUpperCase().slice(0,20).trim(),got=g('searchTerm').trim().toUpperCase();if(ex!==got)add(i,'Search term vs name',g('searchTerm'),'Expected the name in capitals, first 20 characters: "'+ex+'".')}
+  if(has('code')&&has('supplierNo')&&g('code').trim()!==g('supplierNo').trim())add(i,'Vendor Code vs Supplier Number',g('supplierNo'),'Supplier Number '+g('supplierNo').trim()+' differs from Vendor Code '+g('code').trim()+'.');
+  for(const k in aSets){const v=g(k).trim();if(v&&!aSets[k].has(v.toUpperCase()))add(i,'Value outside allowed list',v,(CFG.LAB[k]||k)+' "'+v+'" is not in the allowed list.')}
+  /* optional-column rules (switch on only when the column is mapped) */
+  if(has('createdBy')&&has('approvedBy')){const a=norm(g('createdBy')),b=norm(g('approvedBy'));if(a&&a===b)add(i,'Same user created and approved',g('createdBy'),'Created and approved by the same user.')}
+  if(has('status')&&has('lastTxn')&&/block|inactive|dormant|delet|^x$/i.test(g('status').trim())){const t=pd(g('lastTxn'));if(!isNaN(t)&&now-t<=CFG.recentDays*864e5&&t<=now+864e5)add(i,'Blocked vendor with recent transactions',g('status'),'Vendor is '+g('status').trim()+' but has a transaction on '+g('lastTxn').trim()+'.')}
+  /* fuzzy duplicate-name blocking */
+  if(ON['Possible duplicate name']&&nname){const tk=[...toks(name)].sort();if(tk.length){const key=tk[0];(nameIdx[key]=nameIdx[key]||[]).push(i)}}
+ }
+ /* duplicates */
+ for(const k in seen.pan)if(k&&seen.pan[k].length>1)seen.pan[k].forEach(i=>add(i,'Duplicate PAN',k,'Same PAN appears on '+seen.pan[k].length+' vendors.'));
+ for(const k in seen.gst)if(k&&seen.gst[k].length>1)seen.gst[k].forEach(i=>add(i,'Duplicate GSTIN',k,'Same GSTIN appears on '+seen.gst[k].length+' vendors.'));
+ for(const k in seen.acct){const ix=seen.acct[k];if(ix.length>1){
+  const pans=new Set(ix.map(i=>has('pan')?norm(rows[i][MAP.pan]):''));
+  ix.forEach(i=>pans.size>1?add(i,'Shared bank account across PANs',k,'Account is used by '+ix.length+' vendors with different PANs.'):add(i,'Duplicate bank account',k,'Account is used by '+ix.length+' vendors.'));
+ }}
+ if(ON['Possible duplicate name']){
+  const done=new Set();
+  for(const key in nameIdx){const ix=nameIdx[key];if(ix.length<2||ix.length>300)continue;
+   for(let a=0;a<ix.length;a++)for(let b=a+1;b<ix.length;b++){
+    const na=S(rows[ix[a]][MAP.name]),nb=S(rows[ix[b]][MAP.name]);
+    if(sim(na,nb)>=CFG.dupName){
+     const p=ix[a]+'|'+ix[b];if(done.has(p))continue;done.add(p);
+     add(ix[a],'Possible duplicate name',na,'Name closely matches "'+nb+'" (row '+(ix[b]+2)+').');
+     add(ix[b],'Possible duplicate name',nb,'Name closely matches "'+na+'" (row '+(ix[a]+2)+').');
+    }}}
+ }
+ return {EX,SC:scoreAll(EX,rows.length,CFG)};
+}
+</script>
+<script>
+/* ===== BOOT: engine is shared source (worker + fallback) ===== */
+const ENGINE_SRC=document.getElementById('engine').textContent;
+const ENG=new Function(ENGINE_SRC+';return {runValidation,scoreAll,S,norm,nk,sim,toks,gstSum,pd};')();
+const {runValidation,scoreAll,S,norm,nk,sim,gstSum}=ENG;
+const $=id=>document.getElementById(id);
+const esc=s=>S(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD=d=>{try{return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}catch(x){return ''}};
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(x){return null}};
+const dl=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
+const showErr=m=>{const b=$('err');b.classList.remove('hide');b.textContent=m};
+window.addEventListener('error',e=>showErr('Error: '+e.message+' (line '+e.lineno+')'));
+
+/* ===== CONFIG (stable names; edit here or in Settings) ===== */
+/* FIELDS: generic field keys, labels and mapping-step groups */
+const FIELDS=[
+['code','Vendor Code','Identity and address'],['supplierNo','Supplier Number','Identity and address'],['role','Vendor Role / Type','Identity and address'],['group','Vendor Group','Identity and address'],['name','Vendor Name','Identity and address'],['searchTerm','Search Term','Identity and address'],['street','Street / Address','Identity and address'],['city','City','Identity and address'],['pin','PIN Code','Identity and address'],['state','State','Identity and address'],['country','Country','Identity and address'],['phone','Phone','Identity and address'],['email','Vendor Email','Identity and address'],
+['gstin','GSTIN','Tax and MSME'],['pan','PAN','Tax and MSME'],['udyam','Udyam Number','Tax and MSME'],['msme','MSME Category','Tax and MSME'],['tds','TDS Section','Tax and MSME'],['tdsCode','TDS Code','Tax and MSME'],
+['ifsc','IFSC','Bank'],['acct','Bank Account No','Bank'],['holder','Account Holder Name','Bank'],['bankc','Bank Country','Bank'],
+['acctGroup','Account Group','Purchasing and control'],['companyCode','Company Code','Purchasing and control'],['recon','Reconciliation Account','Purchasing and control'],['pay','Payment Terms','Purchasing and control'],['payMethod','Payment Method','Purchasing and control'],['purOrg','Purchasing Org','Purchasing and control'],['currency','Currency','Purchasing and control'],['inco','Incoterms','Purchasing and control'],
+['spend','Spend / Transaction Value','Optional: map only if in this file'],['lastTxn','Last Transaction Date','Optional: map only if in this file'],['createdBy','Created By','Optional: map only if in this file'],['approvedBy','Approved By','Optional: map only if in this file'],['status','Vendor Status / Block Flag','Optional: map only if in this file']
+].map(([k,l,g])=>({k,l,g}));
+const LAB=Object.fromEntries(FIELDS.map(f=>[f.k,f.l]));
+const CFG={
+ /* alias list: normalised header text (lowercase, letters and digits only). Exact match first, then fuzzy. */
+ aliases:{code:['vendorcode','vendorid','suppliercode','partner'],supplierNo:['suppliernumber','lifnr'],role:['vendorroletype','vendorrole','bprole','vendortype'],group:['vendorgroup','bugroup'],name:['vendorname','suppliername','legalname','nameorg1'],searchTerm:['searchterm','shortname','busort1'],street:['streetaddress','street','address'],city:['city','city1'],pin:['pincode','postalcode','postcode1'],state:['state','region'],country:['country'],phone:['phone','telephone','telnumber'],email:['vendoremail','email','smtpaddr'],
+  gstin:['gstin','gstno','gstn','gstnumber'],pan:['pan','pannumber'],udyam:['udyamnumber','msmeregistrationno','urn','msmeudyamno'],msme:['msmecategory','msmetype'],tds:['tdssection','withholdingtaxtype','witht'],tdsCode:['tdscode','withholdingtaxcode','wtwithcd'],
+  ifsc:['ifsc','bankkey','bankl'],acct:['bankaccountno','accountnumber','bankn'],holder:['accountholdername','beneficiaryname','koinh'],bankc:['bankcountry','banks'],
+  acctGroup:['accountgroup','ktokk'],companyCode:['companycode','bukrs'],recon:['reconciliationaccount','reconaccount','akont'],pay:['paymentterms','paymenttermcode','zterm'],payMethod:['paymentmethod','zwels'],purOrg:['purchasingorg','purchasingorganization','ekorg'],currency:['currency','waers'],inco:['incoterms','inco1'],
+  spend:['spend','spendvalue','transactionvalue','spendtransactionvalue','totalspend'],lastTxn:['lasttransactiondate','lasttxndate','lastpostingdate'],createdBy:['createdby','creator','ernam'],approvedBy:['approvedby','approver'],status:['vendorstatus','blockflag','vendorblockflag','blockstatus']},
+ /* State code -> GST state code (all states and UTs) */
+ gstState:{JK:'01',HP:'02',PB:'03',CH:'04',UK:'05',HR:'06',DL:'07',RJ:'08',UP:'09',BR:'10',SK:'11',AR:'12',NL:'13',MN:'14',MZ:'15',TR:'16',ML:'17',AS:'18',WB:'19',JH:'20',OD:'21',OR:'21',CG:'22',MP:'23',GJ:'24',DD:'26',DN:'26',MH:'27',KA:'29',GA:'30',LD:'31',KL:'32',TN:'33',PY:'34',AN:'35',TS:'36',AP:'37',LA:'38'},
+ /* Payment term code -> days (editable) */
+ payDays:{NT0:0,NT15:15,NT30:30,NT45:45,NT60:60,NT90:90},
+ /* PAN 4th character vs name suffix (normalised, no spaces) */
+ panEntity:{C:['PVTLTD','PRIVATELIMITED','LIMITED','LTD'],F:['LLP','BROTHERS','SONS','ASSOCIATES'],H:['HUF'],T:['TRUST'],A:['COLLECTIVE','GROWERS']},
+ panEntityLow:{P:['ENTERPRISES','STORES','TRADERS','AGENCIES']},
+ panTypes:'PCHFATBLJG',
+ /* TDS: section -> code prefix. TDS code -> allowed PAN types ships EMPTY: confirm against the client's ERP withholding-tax configuration. */
+ tdsPrefix:{'4C':'C','4I':'I','4J':'J'},
+ tdsEntity:{},
+ fuzzy:0.6,dupName:0.85,recentDays:90,
+ sev:{High:25,Medium:10,Low:3,Info:0},
+ uplift:{dup:15,sharedBank:20,sameUser:15,blockedTxn:20,msme43b:10,holder:20,udNF:25,udIn:20,udNm:10,udCt:10},
+ bands:[['Critical',75],['High',50],['Medium',25],['Low',0]],
+ off:{},sevOv:{},allowed:{}
+};
+const UPL={dup:'Duplicate vendor',sharedBank:'Shared bank account across PANs',sameUser:'Same user created and approved',blockedTxn:'Blocked vendor with recent transactions',msme43b:'MSME payment terms above 45 days',holder:'Account holder differs from name',udNF:'Udyam not found',udIn:'Udyam cancelled or inactive',udNm:'Udyam name mismatch',udCt:'Udyam category mismatch'};
+/* RULES: [exception type, category, default severity, required fields, uplift key]. A rule is "Not applicable" when a required field is not mapped. */
+const RULES=[
+['PAN missing','PAN','High',['pan']],['PAN malformed','PAN','High',['pan']],['PAN 4th character invalid','PAN','High',['pan']],['PAN type vs name','PAN','Medium',['pan','name']],['PAN type vs name (advisory)','PAN','Low',['pan','name']],['Raw formatting defect (PAN)','PAN','Low',['pan']],
+['GSTIN format invalid','GSTN','High',['gstin']],['GST state code invalid','GSTN','High',['gstin']],['PAN-in-GSTIN mismatch','GSTN','High',['gstin','pan']],['GSTIN checksum failure','GSTN','High',['gstin']],['GST state vs State','GSTN','Medium',['gstin','state']],['PAN derivable from GSTIN','GSTN','Info',['gstin','pan']],['Raw formatting defect (GSTIN)','GSTN','Low',['gstin']],
+['MSME category blank','MSME','Medium',['msme']],['Udyam malformed','MSME','Medium',['udyam']],['Udyam state code invalid','MSME','Medium',['udyam']],['Udyam state vs State','MSME','Low',['udyam','state']],['MSME without Udyam','MSME','Medium',['msme','udyam']],['Udyam with Not MSME','MSME','Medium',['msme','udyam']],
+['43B(h) payment term >45 days','MSME','High',['msme','pay'],'msme43b'],['43B(h) at limit','MSME','Low',['msme','pay']],['43B(h) Medium vendor (info)','MSME','Info',['msme','pay']],['Payment term unmapped','MSME','Medium',['msme','pay']],
+['Udyam not found','MSME','High',['udyam'],'udNF'],['Udyam cancelled/inactive','MSME','High',['udyam'],'udIn'],['Udyam name mismatch','MSME','Medium',['udyam'],'udNm'],['Udyam category mismatch','MSME','Medium',['udyam'],'udCt'],
+['IFSC invalid','Bank','High',['ifsc']],['Bank account invalid','Bank','High',['acct']],['Bank country not IN','Bank','Medium',['bankc']],['Holder/name blank','Bank','High',['holder','name'],'holder'],['Holder differs from vendor','Bank','High',['holder','name'],'holder'],['Shared bank account across PANs','Bank','High',['acct','pan'],'sharedBank'],['Duplicate bank account','Bank','Medium',['acct'],'dup'],
+['TDS section vs code','TDS','Medium',['tds','tdsCode']],['TDS with missing/invalid PAN','TDS','Medium',['tdsCode','pan']],['TDS code vs PAN entity','TDS','Medium',['tdsCode','pan']],
+['Duplicate PAN','Other','High',['pan'],'dup'],['Duplicate GSTIN','Other','High',['gstin'],'dup'],['Possible duplicate name','Other','Medium',['name'],'dup'],['Vendor name blank','Other','High',['name']],['Address blank','Other','Medium',['street']],['Payment terms blank','Other','Medium',['pay']],['PIN invalid','Other','Medium',['pin']],['Vendor email invalid','Other','Low',['email']],['Phone invalid','Other','Low',['phone']],['Search term vs name','Other','Low',['searchTerm','name']],['Vendor Code vs Supplier Number','Other','Medium',['code','supplierNo']],['Value outside allowed list','Other','Low',[]],
+['Same user created and approved','Other','High',['createdBy','approvedBy'],'sameUser'],['Blocked vendor with recent transactions','Other','High',['status','lastTxn'],'blockedTxn']
+];
+const RTAB=Object.fromEntries(RULES.map(([t,c,s,n,u])=>[t,{cat:c,sev:s,needs:n,up:u||''}]));
+const ALLOW_KEYS=['role','group','acctGroup','companyCode','recon','purOrg','currency','payMethod','inco'];
+const cfgE=()=>Object.assign({},CFG,{R:RTAB,LAB});
+const CFG_KEYS=['sev','uplift','bands','fuzzy','dupName','recentDays','off','sevOv','gstState','payDays','panEntity','panEntityLow','tdsPrefix','tdsEntity'];
+const DEF_CFG=JSON.stringify(Object.fromEntries(CFG_KEYS.map(k=>[k,CFG[k]])));
+const band=s=>{for(const b of CFG.bands)if(s>=b[1])return b[0];return CFG.bands[CFG.bands.length-1][0]};
+
+/* ===== STORAGE: IndexedDB (trail + key/value) with in-memory fallback ===== */
+let IDB=null,MEM={},TRAIL=[];
+const idbReady=new Promise(res=>{try{const q=indexedDB.open('vmv',2);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains('trail'))d.createObjectStore('trail',{keyPath:'n'});if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv',{keyPath:'k'})};q.onsuccess=()=>{IDB=q.result;res()};q.onerror=()=>res();q.onblocked=()=>res()}catch(x){res()}});
+const kvSet=(k,v)=>{MEM[k]=v;try{IDB&&IDB.transaction('kv','readwrite').objectStore('kv').put({k,v})}catch(x){}};
+const storesLoaded=idbReady.then(()=>new Promise(res=>{if(!IDB)return res();try{const tx=IDB.transaction(['trail','kv']);tx.objectStore('trail').getAll().onsuccess=e=>{TRAIL=e.target.result.filter(x=>x&&typeof x==='object'&&Number.isFinite(x.n)).sort((a,b)=>a.n-b.n)};tx.objectStore('kv').getAll().onsuccess=e=>e.target.result.forEach(r=>MEM[r.k]=r.v);tx.oncomplete=()=>res();tx.onerror=()=>res()}catch(x){res()}}));
+function saveCfg(){kvSet('cfg',Object.fromEntries(CFG_KEYS.map(k=>[k,CFG[k]])))}
+
+/* ===== AUDIT TRAIL: SHA-256 hash chain ===== */
+let chain=Promise.resolve();
+const hex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+const sha=async t=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)));
+const shaBuf=async b=>hex(await crypto.subtle.digest('SHA-256',b));
+const entryHash=(prev,e)=>sha(prev+JSON.stringify([e.n,e.t,e.user,e.action,e.details]));
+function log(action,details){chain=chain.then(async()=>{try{await storesLoaded;const prev=TRAIL.length?TRAIL[TRAIL.length-1].hash:'GENESIS',e={n:TRAIL.length+1,t:new Date().toISOString(),user:ls('vmv_user')||'Auditor',action,details:S(details),prev};e.hash=await entryHash(prev,e);TRAIL.push(e);try{IDB&&IDB.transaction('trail','readwrite').objectStore('trail').put(e)}catch(x){}renderTrail()}catch(x){console.warn('log failed',x)}})}
+function renderTrail(){
+ const f=$('tf').value||'All',a=$('tfrom').value,b=$('tto').value;
+ $('tf').innerHTML=['All',...new Set(TRAIL.map(e=>S(e.action)))].map(x=>`<option ${x===f?'selected':''}>${esc(x)}</option>`).join('');
+ const list=TRAIL.filter(e=>e&&(f==='All'||S(e.action)===f)&&(!a||S(e.t).slice(0,10)>=a)&&(!b||S(e.t).slice(0,10)<=b)).slice().reverse();
+ $('tl').innerHTML=(IDB?'':'<div class="card err">IndexedDB is unavailable. The trail is held in memory only and will be lost when you close this page.</div>')+(list.map(e=>`<details class="row"><summary><span class="dot Low"></span><span class="vn"><b>${esc(e.action)}</b><small>${esc(e.user)} · ${esc(S(e.t).replace('T',' ').slice(0,19))} UTC</small></span><span class="tag">#${esc(e.n)}</span></summary><p class="why">${esc(e.details)}</p><p class="why"><code>${esc(S(e.hash).slice(0,32))}…</code></p></details>`).join('')||'<p class="why">No entries match.</p>');
+}
+async function verifyTrail(){let prev='GENESIS',bad=0;for(const e of TRAIL){if(e.prev!==prev||e.hash!==await entryHash(prev,e)){bad=e.n;break}prev=e.hash}
+ const el=$('vres');el.textContent=bad?'FAIL: the chain breaks at entry '+bad+'.':'PASS: '+TRAIL.length+' entries verified. Final hash '+prev;el.style.color=bad?'var(--hi-i)':'var(--lo-i)'}
+function trailExcel(){if(!window.XLSX)return showErr('The Excel library did not load (it needs access to cdnjs.cloudflare.com).');const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(TRAIL.map(e=>({No:e.n,'Time (UTC)':e.t,User:e.user,Action:e.action,Details:e.details,'Previous hash':e.prev,Hash:e.hash}))),'Audit Trail');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{Entries:TRAIL.length,'Final hash':TRAIL.length?TRAIL[TRAIL.length-1].hash:'',Note:'Tamper-evident, not tamper-proof. Keep with the audit working papers.'}]),'Verification');XLSX.writeFile(wb,'audit-trail.xlsx');log('Trail exported','Excel')}
+
+/* ===== STATE ===== */
+let H=[],ROWS=[],MAP={},EX=[],SC=[],SP=[],SEL=new Set(),FIL={cat:'',band:'',sev:'',q:''},SHOWN=100,RSHOWN=100,RBAND='',FNAME='',LASTRUN=null,WK=null;
+let OWNKEY='',OWN={},FB='',DAYS=5,DR={},Q={},STAT={},UDR={},UDI=0,UDW=[],PRIV=false;
+const vname=i=>MAP.name!=null?S(ROWS[i][MAP.name]):'Row '+(i+2);
+const vcode=i=>MAP.code!=null?S(ROWS[i][MAP.code]):'';
+const gv=(i,k)=>MAP[k]!=null?S(ROWS[i][MAP[k]]):'';
+const money=n=>new Intl.NumberFormat('en-IN',{maximumFractionDigits:0}).format(n);
+
+/* ===== NAVIGATION ===== */
+const VIEWS=[['upload','Upload'],['review','Review'],['dash','Dashboard'],['risk','Risk'],['udy','Udyam'],['email','Email'],['trail','Trail'],['set','Settings']];
+$('nav').innerHTML=VIEWS.map(([k,l])=>`<button data-v="${k}">${l}</button>`).join('');
+const VIEWRENDER={review:()=>renderReview(),dash:()=>renderDash(),risk:()=>renderRisk(),udy:()=>renderUd(),email:()=>renderEmail(),trail:()=>renderTrail(),set:()=>renderSet()};
+const VT={upload:['Upload Vendor Master','Read locally in your browser. Nothing is sent anywhere.'],review:['Review Exceptions','Findings grouped by vendor, with the reason for each score.'],dash:['Dashboard','Where the risk sits across your vendor master.'],risk:['Risk Scoring','How each indicative score is built.'],udy:['Udyam Verification Assist','Check each certificate yourself on the official portal; record the result here.'],email:['Internal Audit Queries','Drafts to process owners, never to vendors.'],trail:['Audit Trail','Hash-chained, tamper-evident; export it to the working papers.'],set:['Settings','Rules, thresholds, allowed values and routing.']};
+$('brand').onclick=()=>go('upload');
+function go(v){const t=VT[v]||['',''];$('vtitle').textContent=t[0];$('vsub').textContent=t[1];VIEWS.forEach(([k])=>$('v-'+k).classList.toggle('hide',k!==v));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));try{VIEWRENDER[v]&&VIEWRENDER[v]()}catch(e){showErr('Error: '+e.message)}window.scrollTo({top:0})}
+$('nav').onclick=e=>{const v=e.target.dataset&&e.target.dataset.v;if(v)go(v)};
+addEventListener('scroll',()=>$('hd').classList.toggle('compact',scrollY>40),{passive:true});
+/* theme: Auto / Light / Dark */
+const THEMES=['auto','light','dark'];let THEME=ls('vmv_theme')||'auto';
+function applyTheme(){if(THEME==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',THEME);$('theme').textContent='Theme: '+THEME[0].toUpperCase()+THEME.slice(1)}
+$('theme').onclick=()=>{THEME=THEMES[(THEMES.indexOf(THEME)+1)%3];ls('vmv_theme',THEME);applyTheme()};applyTheme();
+
+/* ===== UPLOAD: every cell is read as text ===== */
+const drop=$('drop');drop.onclick=()=>$('file').click();drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');load(e.dataTransfer.files[0])};$('file').onchange=e=>{load(e.target.files[0]);e.target.value=''};
+let FSIZE=null;
+async function load(f){
+ if(!f)return;
+ try{FSIZE=f.size;
+  if(!window.XLSX)throw new Error('The Excel library did not load (it needs access to cdnjs.cloudflare.com).');
+  const buf=await f.arrayBuffer(),hash=await shaBuf(buf);
+  const wb=/\.csv$/i.test(f.name)?XLSX.read(new TextDecoder().decode(buf),{type:'string',raw:true}):XLSX.read(buf,{type:'array',raw:true,cellDates:false});
+  const a=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+  if(!a.length)throw new Error('The first sheet is empty.');
+  setData(a[0],a.slice(1).filter(x=>x.some(c=>S(c).trim())),f.name);
+  log('File uploaded',f.name+', '+ROWS.length+' rows, '+H.length+' columns, SHA-256 '+hash);
+ }catch(e){showErr('Could not read the file: '+e.message)}
+}
+/* two-pass auto-map: exact alias first for every field, then fuzzy for what is left */
+function autoMap(h){
+ const map={},used=new Set(),keys=Object.keys(CFG.aliases);
+ for(const k of keys){for(const al of CFG.aliases[k]){const i=h.findIndex((x,j)=>!used.has(j)&&nk(x)===al);if(i>=0){map[k]=i;used.add(i);break}}}
+ for(const k of keys){if(k in map)continue;const i=h.findIndex((x,j)=>!used.has(j)&&!(k==='email'&&/owner/i.test(x))&&CFG.aliases[k].some(al=>al.length>4&&nk(x).includes(al)));if(i>=0){map[k]=i;used.add(i)}}
+ return map;
+}
+function matchProfile(h){const set=new Set(h.map(nk));let best=null,br=0;(MEM.profiles||[]).forEach(p=>{const ps=new Set(p.headers.map(nk));let n=0;set.forEach(x=>{if(ps.has(x))n++});const r=n/Math.max(set.size,ps.size);if(r>=0.9&&r>br){best=p;br=r}});return best?{p:best,r:br}:null}
+function setData(h,rows,fname){
+ H=Array.from(h,x=>S(x));ROWS=rows.map(r=>Array.from({length:H.length},(_,j)=>S(r[j])));FNAME=fname||FNAME||'';showFile(FNAME,typeof FSIZE==='number'?FSIZE:null);FSIZE=null;
+ MAP=autoMap(H);let note='';
+ const pm=matchProfile(H);
+ if(pm){MAP={};for(const k in pm.p.map){const i=H.findIndex(x=>nk(x)===nk(pm.p.map[k]));if(i>=0)MAP[k]=i}note='Saved profile "'+pm.p.name+'" applied ('+Math.round(pm.r*100)+'% header match).';log('Mapping profile applied',pm.p.name+', '+Math.round(pm.r*100)+'% header match')}
+ else note='Columns were detected from the alias list. Correct anything that looks wrong.';
+ CFG.tdsEntity=(MEM.cfg&&MEM.cfg.tdsEntity)||{};
+ CFG.allowed={};ALLOW_KEYS.forEach(k=>{if(MAP[k]!=null)CFG.allowed[k]=[...new Set(ROWS.map(r=>S(r[MAP[k]]).trim()).filter(Boolean))].sort()});
+ $('mapbox').classList.remove('hide');$('mapnote').textContent=note;renderMapping();
+}
+function renderMapping(){
+ const groups=[...new Set(FIELDS.map(f=>f.g))];
+ $('map').innerHTML=groups.map(g=>`<div class="mgt">${esc(g)}</div><div class="map">${FIELDS.filter(f=>f.g===g).map(f=>`<div><label for="m_${f.k}">${esc(f.l)}</label><select id="m_${f.k}" data-k="${f.k}"><option value="">Not mapped</option>${H.map((x,i)=>`<option value="${i}" ${MAP[f.k]===i?'selected':''}>${esc(x)}</option>`).join('')}</select></div>`).join('')}</div>`).join('');
+ const un=H.filter((x,i)=>!Object.values(MAP).includes(i));
+ $('unused').textContent=un.length?un.length+' column'+(un.length>1?'s':'')+' not used by any rule: '+un.join(', '):'All columns are mapped.';
+}
+$('map').onchange=e=>{const k=e.target.dataset.k;if(!k)return;e.target.value===''?delete MAP[k]:MAP[k]=+e.target.value;renderMapping()};
+$('run').onclick=async()=>{await validate();go('dash')};
+$('saveprof').onclick=()=>{if(!H.length)return;const p={name:FNAME||'Mapping profile',headers:H,map:Object.fromEntries(Object.entries(MAP).map(([k,i])=>[k,H[i]]))};const ps=(MEM.profiles||[]).filter(x=>{const a=new Set(x.headers.map(nk));let n=0;H.forEach(h=>{if(a.has(nk(h)))n++});return n/Math.max(a.size,H.length)<0.9});ps.push(p);kvSet('profiles',ps);log('Mapping profile saved',p.name+', '+Object.keys(p.map).length+' fields');$('mapnote').textContent='Profile saved. It will be applied automatically when 90% or more of the headers match.'};
+/* templates */
+$('tplBlank').onclick=()=>{if(!window.XLSX)return showErr('The Excel library did not load.');const ws=XLSX.utils.aoa_to_sheet([FIELDS.map(f=>f.l)]),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Vendor Master');XLSX.writeFile(wb,'vendor-master-blank-template.xlsx');log('Template downloaded','blank vendor master')};
+$('tplOwner').onclick=()=>{dl(new Blob(['value,owner_email\nDL,owner.north@example.com\nMH,owner.west@example.com\n'],{type:'text/csv'}),'process-owner-mapping-template.csv');log('Template downloaded','process-owner mapping')};
+
+/* ===== SAMPLE DATA: 39 synthetic vendors in the 33-column ERP layout, with deliberate errors ===== */
+function genSample(){
+ const hdr=['PARTNER','BP_ROLE','BU_GROUP','BU_TYPE','NAME_ORG1','BU_SORT1','STREET','CITY1','POST_CODE1','REGION','COUNTRY','LANGU','TEL_NUMBER','SMTP_ADDR','GSTIN','PAN','MSME_UDYAM_NO','MSME_TYPE','LIFNR','KTOKK','BUKRS','AKONT','ZTERM','ZWELS','EKORG','WAERS','INCO1','BANKS','BANKL','BANKN','KOINH','WITHT','WT_WITHCD'];
+ const X=Object.fromEntries(hdr.map((h,i)=>[h,i]));
+ const bases=['Aldmoor','Brenwick','Calvane','Dorsent','Elvaro','Fyndale','Garrick','Halvern','Istrel','Jorvane','Kestrin','Lomund','Marvane','Nordell','Ostrin','Pelmoor','Quenby','Ravelin','Sorvane','Tavrin','Ulmoor','Vandrel','Wexmoor','Yorlane','Zendor','Arvenk','Bolmer','Cresten','Dunvale','Eskrin','Zephrin','Amorvik','Aldmoor','Belmont','Corvane','Dunmere','Estrel','Fenmoor','Gelmoor'];
+ const sfx=[['Pvt Ltd','C'],['Limited','C'],['LLP','F'],['& Sons','F'],['Traders','P'],['Enterprises','P'],['Brothers','F'],['Associates','F'],['Trust','T'],['Growers Collective','A']];
+ const sts=[['DL','07','New Delhi','110'],['HR','06','Gurugram','122'],['UP','09','Lucknow','226'],['GJ','24','Ahmedabad','380'],['MH','27','Pune','411'],['KA','29','Bengaluru','560'],['TN','33','Chennai','600'],['TS','36','Hyderabad','500'],['KL','32','Kochi','682'],['RJ','08','Jaipur','302']];
+ const mkPan=(b,ent,i)=>(b.slice(0,3)+ent+b[3]).toUpperCase()+String(1000+i*37).slice(-4)+String.fromCharCode(65+(i*7)%26);
+ const mkGst=(sc,pan)=>{const g=sc+pan+'1Z';return g+gstSum(g)};
+ const build=(i,b,nameOverride)=>{
+  const [sf,ent]=sfx[(i-1)%10],[st,sc,city,pp]=sts[(i-1)%10],name=nameOverride||(b+' '+sf),pan=mkPan(b,ent,i),cat=['Micro','Small','Medium','Not MSME'][i%4];
+  const ud=cat==='Not MSME'?'':'UDYAM-'+st+'-'+String(10+i).slice(-2)+'-'+String(1000000+i*7919).slice(-7);
+  const pay=cat==='Medium'?'NT60':cat==='Not MSME'?'NT45':'NT30',tds=ent==='C'?['4C','C1']:ent==='P'?['4J','J1']:['4I','I1'];
+  const code='2'+String(i).padStart(9,'0');
+  return [code,i%3?'FLVN00':'FLVN01','BP02','2',name,name.toUpperCase().slice(0,20).trim(),'Plot '+(10+i)+', Industrial Estate Sector '+(i%9+1),city,pp+String(i).padStart(3,'0'),st,'IN','EN','+91-'+String(9000000000+i*3333333).slice(-10),'accounts@'+b.toLowerCase()+'.example.com',mkGst(sc,pan),pan,ud,cat,code,'LIEF','1000',['0021100000','0021200000'][i%2],pay,['R','N'][i%2],'1000','INR',['EXW','DAP','FCA'][i%3],'IN',['HDFC','ICIC','SBIN','UTIB'][i%4]+'0'+String(100000+i*37).slice(-6),(i%4===0?'0':'7')+String(10000000000+i*98765431).slice(-11),name,tds[0],tds[1]];
+ };
+ const rows=[];for(let i=1;i<=30;i++)rows.push(build(i,bases[i-1]));
+ const R=n=>rows[n-1],set=(n,c,v)=>{R(n)[X[c]]=v},get=(n,c)=>R(n)[X[c]];
+ const stOf=n=>sts[(n-1)%10];
+ /* deliberate errors, one family per row so every rule fires */
+ set(1,'PAN','');                                                       /* PAN missing + GSTIN present + TDS with missing PAN */
+ set(2,'PAN','ABCDE12345');                                             /* PAN malformed */
+ set(3,'PAN',get(3,'PAN').toLowerCase());                               /* raw formatting defect only */
+ {const p=get(4,'PAN');set(4,'PAN',p.slice(0,3)+'Z'+p.slice(4));set(4,'GSTIN',mkGst(stOf(4)[1],get(4,'PAN')))} /* PAN 4th character invalid */
+ set(5,'GSTIN','07AAAAA');                                              /* GSTIN format invalid */
+ {const g=get(6,'GSTIN');set(6,'GSTIN',g.slice(0,14)+(g[14]==='X'?'Y':'X'))} /* checksum failure */
+ set(7,'GSTIN',mkGst(stOf(7)[1],get(8,'PAN')));                         /* PAN-in-GSTIN mismatch */
+ set(8,'REGION','KL');                                                  /* GST state vs State */
+ set(9,'GSTIN','00'+get(9,'GSTIN').slice(2));                           /* GST state code invalid */
+ set(10,'GSTIN',get(10,'GSTIN').toLowerCase());                         /* lowercase GSTIN */
+ {const p=get(11,'PAN');set(11,'PAN',p.slice(0,3)+'P'+p.slice(4));set(11,'GSTIN',mkGst(stOf(11)[1],get(11,'PAN')))} /* Pvt Ltd with PAN type P */
+ set(12,'MSME_UDYAM_NO','UDAYAM-'+stOf(12)[0]+'-22-1234567');           /* Udyam malformed (Micro) */
+ set(13,'MSME_UDYAM_NO','UDYAM-ZZ-22-1234567');                         /* Udyam state code invalid (Small) */
+ set(14,'MSME_TYPE','Micro');set(14,'MSME_UDYAM_NO','');                /* MSME without Udyam */
+ set(15,'MSME_UDYAM_NO','UDYAM-HR-12-3456789');                         /* Udyam with Not MSME + state advisory */
+ set(16,'MSME_TYPE','');                                                /* MSME category blank */
+ set(17,'ZTERM','NT60');                                                /* 43B(h) above 45 days (Small) */
+ set(18,'MSME_TYPE','Small');set(18,'ZTERM','NT45');                    /* at the 45-day limit */
+ set(19,'MSME_TYPE','Micro');set(19,'MSME_UDYAM_NO','UDYAM-'+stOf(19)[0]+'-19-7654321');set(19,'ZTERM','ZX99'); /* unmapped payment term */
+ set(20,'BANKL','HDFC1234567');                                         /* IFSC invalid */
+ set(21,'BANKN','12345A789012');                                        /* account contains a letter */
+ set(22,'BANKN','12345');                                               /* account too short */
+ set(23,'KOINH','Meridian Freight Services');                           /* different payee */
+ set(24,'KOINH','');                                                    /* blank account holder */
+ set(25,'NAME_ORG1','');                                                /* blank vendor name */
+ set(26,'SMTP_ADDR','accounts@@vendor');                                /* invalid email */
+ set(27,'TEL_NUMBER','+91-98765');                                      /* short phone */
+ set(28,'POST_CODE1','56001');                                          /* 5-digit PIN */
+ set(29,'BANKS','US');                                                  /* bank country not IN */
+ set(30,'WAERS','USD');                                                 /* currency outside allowed list */
+ rows.push(build(31,bases[30]));set(31,'PAN',get(12,'PAN'));set(31,'GSTIN',get(12,'GSTIN'));set(31,'REGION',get(12,'REGION')); /* duplicate PAN and GSTIN */
+ rows.push(build(32,bases[31]));set(32,'BANKN',get(13,'BANKN'));                                                              /* shared bank account across PANs */
+ rows.push(build(33,bases[32],'Aldmoor Private Limited'));{const p=mkPan('Aldmoor','C',33);set(33,'PAN',p);set(33,'GSTIN',mkGst(stOf(33)[1],p))} /* fuzzy duplicate name */
+ rows.push(build(34,bases[33]));set(34,'BU_SORT1','WRONG TERM');                                                             /* search term mismatch */
+ rows.push(build(35,bases[34]));set(35,'LIFNR','2999999999');                                                                 /* supplier number differs */
+ rows.push(build(36,bases[35]));set(36,'WITHT','4C');set(36,'WT_WITHCD','J1');{const p=get(36,'PAN');set(36,'PAN',p.slice(0,3)+'C'+p.slice(4));set(36,'GSTIN',mkGst(stOf(36)[1],get(36,'PAN')))} /* Enterprises with PAN type C: advisory */                                                /* TDS section vs code */
+ rows.push(build(37,bases[36]));set(37,'MSME_UDYAM_NO','UDYAM-KA-37-1234567');                                                /* Udyam state vs State advisory */
+ rows.push(build(38,bases[37]));set(38,'STREET','');set(38,'ZTERM','');                                                       /* blank address and payment terms */
+ rows.push(build(39,bases[38]));set(39,'PAN',get(18,'PAN'));set(39,'GSTIN',get(18,'GSTIN'));set(39,'BANKN',get(18,'BANKN'));set(39,'REGION',get(18,'REGION')); /* duplicate vendor: same PAN, GSTIN and bank account */
+ const allowed={role:['FLVN00','FLVN01'],group:['BP02'],acctGroup:['LIEF'],companyCode:['1000'],recon:['0021100000','0021200000'],purOrg:['1000'],currency:['INR'],payMethod:['R','N','T'],inco:['EXW','DAP','FCA']};
+ return {h:hdr,rows,allowed};
+}
+async function loadSample(){
+ const d=genSample();setData(d.h,d.rows,'Sample vendor master');CFG.allowed=d.allowed;CFG.tdsEntity={C1:['C'],I1:['F','H','T','A'],J1:['P']};
+ OWNKEY='state';FB='internal.audit@example.com';OWN={};['DL','HR','UP','RJ'].forEach(s=>OWN[s]='north.owner@example.com');['GJ','MH'].forEach(s=>OWN[s]='west.owner@example.com');['KA','TN','TS','KL'].forEach(s=>OWN[s]='south.owner@example.com');
+ UDR={};Q={};await validate(true);seedDemo();log('Sample data loaded',ROWS.length+' synthetic vendors, with an illustrative TDS code mapping (to be confirmed)');go('dash')
+}
+$('sample').onclick=loadSample;
+/* demo state: every Udyam result type and several overdue queries */
+function seedDemo(){
+ const urns=[];ROWS.forEach((r,i)=>{const u=norm(gv(i,'udyam'));if(/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/.test(u)&&!urns.some(x=>x[0]===u))urns.push([u,i])});
+ const day=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10),pick=n=>urns[n];
+ const mk=(n,x)=>{if(pick(n))UDR[pick(n)[0]]=Object.assign({date:day(3),ev:'Screenshot ref '+(100+n)},x)};
+ mk(0,{res:'Verified',rn:vname(pick(0)[1]),rc:gv(pick(0)[1],'msme')});
+ mk(1,{res:'Not found'});mk(2,{res:'Mismatch',rn:'Different Traders',rc:gv(pick(2)[1],'msme')});mk(3,{res:'Cancelled-Inactive'});
+ mk(4,{res:'Verified',rn:'Unrelated Registry Name',rc:gv(pick(4)[1],'msme')});
+ mk(5,{res:'Verified',rn:vname(pick(5)[1]),rc:gv(pick(5)[1],'msme')==='Micro'?'Medium':'Micro'});
+ kvSet('udr',UDR);applyUd(true);
+ const g={};emailEx().forEach(e=>(g[ownerOf(e.i)]=g[ownerOf(e.i)]||[]).push(e));
+ const sets=[['north.owner@example.com','Sent',21,10],['south.owner@example.com','Acknowledged',14,4],['west.owner@example.com','Responded',8,-2]];
+ sets.forEach(([o,st,ago,over])=>{const xs=g[o];if(!xs)return;const sent=new Date(Date.now()-ago*864e5),d=new Date(Date.now()-over*864e5);
+  Q[o]={st,sent:sent.toISOString(),dl:d.toISOString(),items:xs.slice(0,8).map((e,k)=>({v:vname(e.i),c:vcode(e.i),t:e.type,w:e.why,res:st==='Responded'&&k<3?['Resolved','Accepted risk','Escalate'][k]:'',note:st==='Responded'&&k<3?'Management confirmed correction in master.':''}))}});
+ kvSet('q',Q);renderEmail();
+}
+
+/* ===== VALIDATION: background worker with main-thread fallback ===== */
+function runAsync(payload){return new Promise(res=>{const t0=performance.now();let fin=false;
+ const done=(o,m)=>{if(fin)return;fin=true;LASTRUN={ms:Math.round(performance.now()-t0),mode:m,n:payload.rows.length};res(o)};
+ const fb=()=>{try{done(runValidation(payload),'main thread')}catch(e){showErr('Validation failed: '+e.message);done({EX:[],SC:[]},'error')}};
+ try{
+  if(!WK)WK=new Worker(URL.createObjectURL(new Blob([ENGINE_SRC+';\nonmessage=function(e){try{postMessage(runValidation(e.data))}catch(x){postMessage({error:String(x&&x.message||x)})}}'],{type:'text/javascript'})));
+  WK.onmessage=e=>{if(e.data&&e.data.error)fb();else done(e.data,'background worker')};
+  WK.onerror=ev=>{if(ev&&ev.preventDefault)ev.preventDefault();WK=null;fb()};
+  WK.postMessage(payload);
+ }catch(x){WK=null;fb()}})}
+const skeleton=()=>'<div class="card"><div class="sk" style="width:40%"></div><div class="sk"></div><div class="sk" style="width:82%"></div><div class="sk" style="width:66%"></div></div><div class="card"><div class="sk" style="width:30%"></div><div class="sk"></div><div class="sk" style="width:74%"></div></div>';
+async function validate(quiet){
+ if(!ROWS.length)return;
+ $('dashbody').innerHTML=skeleton();
+ const out=await runAsync({rows:ROWS,map:MAP,cfg:cfgE(),now:Date.now()});
+ EX=out.EX;SC=out.SC;
+ SP=ROWS.map((r,i)=>MAP.spend!=null?(parseFloat(S(r[MAP.spend]).replace(/[^0-9.\-]/g,''))||0):0);
+ SEL=new Set(EX.map(e=>e.type));FIL={cat:'',band:'',sev:'',q:''};SHOWN=100;RSHOWN=100;
+ applyUd();
+ log('Validation run',ROWS.length+' rows, '+EX.filter(e=>CFG.sev[e.sev]).length+' exceptions, '+(LASTRUN?LASTRUN.ms+' ms, '+LASTRUN.mode:''));
+ renderAll();
+}
+function renderAll(){['renderDash','renderReview','renderRisk','renderExport','renderUd','renderEmail','renderTrack','renderRail','renderSet'].forEach(f=>{try{window[f]&&window[f]()}catch(e){showErr('Error in '+f+': '+e.message)}})}
+const hasSpend=()=>MAP.spend!=null;
+/* owner routing: from the mapping table only, never from Vendor Email */
+const ownerOf=i=>{const v=OWNKEY&&MAP[OWNKEY]!=null?S(ROWS[i][MAP[OWNKEY]]).trim().toUpperCase():'';return OWN[v]||FB||'(no owner)'};
+/* exceptions in the current view, highest-risk vendor first */
+function filtered(){
+ let a=EX.filter(e=>SEL.has(e.type));
+ if(FIL.cat)a=a.filter(e=>e.cat===FIL.cat);if(FIL.sev)a=a.filter(e=>e.sev===FIL.sev);if(FIL.band)a=a.filter(e=>band(SC[e.i].s)===FIL.band);
+ if(FIL.q){const q=FIL.q.toLowerCase();a=a.filter(e=>(vname(e.i)+' '+vcode(e.i)).toLowerCase().includes(q))}
+ return a;
+}
+const cur=()=>filtered().sort((a,b)=>SC[b.i].s-SC[a.i].s||a.i-b.i);
+
+/* uploaded-file card shown inside the drop zone */
+function showFile(name,size){
+ const el=$('fcard'),d=$('drop'),n=S(name),ext=(n.match(/\.(xlsx|xls|csv)$/i)||[,''])[1].toUpperCase()||'DATA';
+ const sz=size==null?'':size<1024?size+' B':size<1048576?Math.round(size/1024)+' KB':(size/1048576).toFixed(1)+' MB';
+ el.innerHTML='<span class="fi" aria-hidden="true"><svg viewBox="0 0 36 44" width="34" height="42"><path d="M4 2h18l10 10v28a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1F7A4D"/><path d="M22 2l10 10H24a2 2 0 0 1-2-2z" fill="#4FAE80"/><text x="17" y="38" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="-apple-system,Inter,Segoe UI,sans-serif">'+esc(ext)+'</text><path d="M9 16l5 6m0-6l-5 6m9-6h8m-8 6h8" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".9"/></svg></span><span class="ft"><b>'+esc(n)+'</b><em>'+ROWS.length.toLocaleString()+' rows · '+H.length+' columns'+(sz?' · '+sz:'')+'</em></span><span class="fok"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Loaded</span><span class="frp">Click or drop to replace</span>';
+ el.classList.remove('hide');d.classList.add('has');d.querySelector('b').style.display='none';$('dropsub').style.display='none';
+}
+
+/* ===== TOAST, BOTTOM SHEET ===== */
+let toastT=null;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200)}
+function openSheet(html){$('sheetp').innerHTML=html+'<p style="margin:20px 0 0"><button class="btn ghost" data-s="close">Close</button></p>';$('sheet').classList.add('open');$('sheet').setAttribute('aria-hidden','false');setTimeout(()=>{const b=$('sheetp').querySelector('[data-s=close]');if(b)b.focus()},60)}
+function closeSheet(){$('sheet').classList.remove('open');$('sheet').setAttribute('aria-hidden','true')}
+$('sheet').addEventListener('click',e=>{if(e.target.dataset.s==='close')closeSheet()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+/* "Why this score?": every factor and its points */
+function whySheet(i){
+ const x=SC[i],raw=x.f.reduce((a,f)=>a+f[1],0);
+ openSheet(`<h2>Why this score?</h2><p class="why" style="margin-top:0"><b>${esc(vname(i))}</b>${vcode(i)?' · '+esc(vcode(i)):''}</p>
+ <p style="margin:14px 0"><span class="pill ${band(x.s)}">${x.s} · ${band(x.s)}</span></p>
+ ${x.f.map(f=>`<div class="fr"><span>${esc(f[0])}</span><b>+${f[1]}</b></div>`).join('')||'<p class="why">No scoring factors.</p>'}
+ ${raw>100?`<div class="fr"><span>Capped at 100</span><b>-${raw-100}</b></div>`:''}
+ <p class="note" style="margin-top:16px">Indicative and rule-based. Weights, uplifts and bands are editable in Settings.</p>`);
+}
+
+/* ===== DASHBOARD ===== */
+function countUp(el,n,suf){const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/600);el.textContent=Math.round(n*(1-Math.pow(1-p,3)))+suf;if(p<1)requestAnimationFrame(f)})(t0)}
+function donut(bc){
+ const tot=Math.max(1,ROWS.length),r=54,C=2*Math.PI*r;let off=0;
+ const segs=CFG.bands.map(([b])=>{const n=bc[b]||0,len=n/tot*C,s=`<circle class="seg-c ${b}" data-fband="${b}" r="${r}" cx="70" cy="70" fill="none" stroke-width="22" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)" tabindex="0" role="button" aria-label="${b} risk: ${n} vendors"/>`;off+=len;return s}).join('');
+ return `<svg viewBox="0 0 140 140" width="160" height="160" role="img" aria-label="Risk band distribution"><circle r="${r}" cx="70" cy="70" fill="none" stroke="var(--line)" stroke-width="22"/>${segs}<text x="70" y="72" text-anchor="middle" class="dn">${ROWS.length}</text><text x="70" y="88" text-anchor="middle" class="dl">vendors</text></svg>`;
+}
+function scatter(){
+ const pts=ROWS.map((r,i)=>[SP[i],SC[i].s,i]).filter(p=>p[0]>0);if(!pts.length)return '<p class="why" style="margin:0">No spend values found in the mapped column.</p>';
+ const W=600,Hh=220,L=44,B=26,mx=Math.log10(Math.max(...pts.map(p=>p[0]))+1)||1,mn=Math.log10(Math.min(...pts.map(p=>p[0]))+1);
+ const X=v=>L+(Math.log10(v+1)-mn)/Math.max(.001,mx-mn)*(W-L-12),Y=v=>Hh-B-v/100*(Hh-B-10);
+ return `<svg viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="Risk score versus spend"><line x1="${L}" y1="${Hh-B}" x2="${W-8}" y2="${Hh-B}" stroke="var(--line2)"/><line x1="${L}" y1="8" x2="${L}" y2="${Hh-B}" stroke="var(--line2)"/>
+ ${[0,50,100].map(v=>`<text x="${L-8}" y="${Y(v)+4}" text-anchor="end" class="dl">${v}</text>`).join('')}<text x="${W/2}" y="${Hh-6}" text-anchor="middle" class="dl">Spend (log scale)</text>
+ ${pts.map(p=>`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="5" fill="var(--${p[1]>=75?'hi':p[1]>=50?'hi2':p[1]>=25?'md':'lo'})" opacity=".8"><title>${esc(vname(p[2]))}: score ${p[1]}, spend ${money(p[0])}</title></circle>`).join('')}</svg>`;
+}
+function renderDash(){
+ const el=$('dashbody');
+ if(!ROWS.length||!SC.length){el.innerHTML='<div class="card"><p class="why" style="margin:0">Upload a vendor master, or load the sample data, to see the dashboard.</p></div>';return}
+ const counted=EX.filter(e=>CFG.sev[e.sev]),vs=new Set(counted.map(e=>e.i)),hi=counted.filter(e=>e.sev==='High').length;
+ const cc={},sv={High:0,Medium:0,Low:0};counted.forEach(e=>{cc[e.cat]=(cc[e.cat]||0)+1;sv[e.sev]=(sv[e.sev]||0)+1});
+ const bc={};SC.forEach(x=>{const b=band(x.s);bc[b]=(bc[b]||0)+1});
+ const mx=Math.max(1,...Object.values(cc)),top=SC.map((x,i)=>[i,x.s]).sort((a,b)=>b[1]-a[1]).slice(0,10).filter(x=>x[1]>0);
+ const kp=[['Total vendors',ROWS.length,'','all',''],['Vendors with exceptions',vs.size,'','all',''],['Exception rate',ROWS.length?Math.round(vs.size/ROWS.length*100):0,'%','all',''],['High-severity findings',hi,'','sev:High','hi']];
+ el.innerHTML=`<div class="kpis">${kp.map(([l,n,u,a,c])=>`<button class="kpi ${c}" data-act="${a}"><b data-n="${n}" data-s="${u}">0${u}</b><span>${l}</span></button>`).join('')}</div>
+ <p class="runnote">${LASTRUN?`Checked ${LASTRUN.n.toLocaleString()} vendors in ${LASTRUN.ms} ms (${LASTRUN.mode}). Select any figure, bar or ring segment to filter the Review list.`:''}</p>
+ <div class="two"><div class="card"><span class="ct">Exceptions by Category</span>${['PAN','GSTN','MSME','Bank','TDS','Other'].map(c=>`<button class="bar clk" data-fcat="${c}"><em>${c}</em><span class="trk"><i style="width:${(cc[c]||0)/mx*100}%"></i></span><b>${cc[c]||0}</b></button>`).join('')}</div>
+ <div class="card"><span class="ct">Exceptions by Severity</span>${['High','Medium','Low'].map(s=>`<button class="bar clk sev${s}" data-fsev="${s}"><em>${s}</em><span class="trk"><i style="width:${sv[s]/Math.max(1,sv.High,sv.Medium,sv.Low)*100}%"></i></span><b>${sv[s]}</b></button>`).join('')}</div></div>
+ <div class="card" style="margin-top:16px"><span class="ct">Risk Bands</span><div class="donutwrap">${donut(bc)}<div style="flex:1;min-width:200px">${CFG.bands.map(([b,m])=>`<button class="bar clk" data-fband="${b}" style="grid-template-columns:1fr 40px"><em><i class="sw ${b}"></i>${b} (${m}+)</em><b>${bc[b]||0}</b></button>`).join('')}</div></div></div>
+ <div class="card"><span class="ct">Top 10 Riskiest Vendors</span>${top.map(([i,s])=>`<button class="rowbtn" data-why="${i}"><span class="dot ${s>=50?'High':s>=25?'Medium':'Low'}"></span><span class="vn"><b>${esc(vname(i))}</b><small>${esc(vcode(i))} · why this score?</small></span><span class="pill ${band(s)}">${s}</span></button>`).join('')||'<p class="why" style="margin:0">No exceptions.</p>'}</div>
+ <div class="card"><span class="ct">Risk against Spend</span>${hasSpend()?scatter():'<span class="tag">Not applicable: column not in this file</span><p class="why">Map a Spend column in the upload step to switch this chart on.</p>'}</div>`;
+ el.querySelectorAll('.kpi b').forEach(b=>countUp(b,+b.dataset.n,b.dataset.s||''));
+}
+function dashFilter(t){
+ const d=t.dataset;SEL=new Set(EX.map(x=>x.type));SHOWN=100;
+ FIL={cat:d.fcat||'',sev:d.fsev||(d.act==='sev:High'?'High':''),band:d.fband||'',q:''};
+ $('q').value='';go('review');
+}
+$('dashbody').addEventListener('click',e=>{const t=e.target.closest('[data-act],[data-fcat],[data-fsev],[data-fband],[data-why]');if(!t)return;if(t.dataset.why!==undefined)return whySheet(+t.dataset.why);dashFilter(t)});
+$('dashbody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-fband]');if(t&&t.tagName==='circle'){e.preventDefault();dashFilter(t)}});
+
+/* ===== REVIEW: one row per vendor, expandable to its exceptions ===== */
+const SEVRANK={High:3,Medium:2,Low:1,Info:0};
+function renderReview(){
+ const types={};EX.forEach(e=>types[e.type]=(types[e.type]||0)+1);
+ const keys=Object.keys(types).sort(),was=$('typesel')&&$('typesel').open;
+ $('chips').innerHTML=EX.length?`<details class="row" id="typesel" ${was?'open':''}><summary><span class="vn"><b>Exception types</b><small>${[...SEL].filter(t=>types[t]).length} of ${keys.length} selected. Drives the list, the Excel download and the emails.</small></span></summary><div class="chips" style="margin:14px 0 0"><button class="chip" data-all="1">Select all</button><button class="chip" data-all="0">Clear</button>${keys.map(t=>`<button class="chip ${SEL.has(t)?'on':''}" data-t="${esc(t)}" aria-pressed="${SEL.has(t)}">${esc(t)} (${types[t]})</button>`).join('')}</div></details>`:'';
+ const f=[['cat','Category'],['sev','Severity'],['band','Risk band']].filter(([k])=>FIL[k]);
+ $('filt').innerHTML=f.map(([k,l])=>`<button class="chip on" data-clr="${k}" aria-label="Remove filter ${l}">${l}: ${esc(FIL[k])} ✕</button>`).join('');
+ listReview();
+}
+function listReview(){
+ if(!EX.length){$('list').innerHTML='<p class="why">'+(ROWS.length?'No exceptions found.':'Upload a vendor master to begin.')+'</p>';$('more').classList.add('hide');return}
+ const m=new Map();filtered().forEach(e=>{let a=m.get(e.i);if(!a){a=[];m.set(e.i,a)}a.push(e)});
+ const gs=[...m.entries()].sort((a,b)=>SC[b[0]].s-SC[a[0]].s||a[0]-b[0]);
+ $('list').innerHTML=gs.slice(0,SHOWN).map(([i,xs])=>{
+  xs.sort((a,b)=>SEVRANK[b.sev]-SEVRANK[a.sev]);const s=SC[i].s;
+  return `<details class="row"><summary><span class="dot ${xs[0].sev}"></span><span class="vn"><b>${esc(vname(i))}</b><small>${esc(vcode(i))}${gv(i,'state')?' · '+esc(gv(i,'state')):''} · ${xs.length} exception${xs.length>1?'s':''}</small></span><span class="pill ${band(s)}">${s}</span></summary>
+  ${xs.map(e=>`<button class="xl" data-t="${esc(e.type)}"><span class="dot ${e.sev}"></span><span><b>${esc(e.type)}</b><small>${esc(e.why)}${e.val?' Value: <code>'+esc(e.val)+'</code>':''}</small></span></button>`).join('')}
+  <p style="margin:10px 0 0"><button class="btn ghost sm" data-why="${i}">Why this score?</button></p></details>`}).join('')||'<p class="why">No exceptions match the current selection.</p>';
+ $('more').classList.toggle('hide',gs.length<=SHOWN);$('more').textContent='Show more ('+(gs.length-SHOWN)+' vendors left)';
+}
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.all!==undefined){SEL=b.dataset.all==='1'?new Set(EX.map(x=>x.type)):new Set()}else if(b.dataset.t){SEL.has(b.dataset.t)?SEL.delete(b.dataset.t):SEL.add(b.dataset.t)}else return;SHOWN=100;renderReview()};
+$('filt').onclick=e=>{const k=e.target.closest('button')&&e.target.closest('button').dataset.clr;if(k){FIL[k]='';renderReview()}};
+$('q').oninput=e=>{FIL.q=e.target.value;SHOWN=100;listReview()};
+$('more').onclick=()=>{SHOWN+=100;listReview()};
+$('list').addEventListener('click',e=>{const w=e.target.closest('[data-why]');if(w)return whySheet(+w.dataset.why);const x=e.target.closest('.xl');if(x)openInsight(x.dataset.t)});
+
+/* ===== RISK: all vendors ranked by score ===== */
+function renderRisk(){
+ if(!SC.length){$('rchips').innerHTML='';$('rlist').innerHTML='<p class="why">Run validation to see vendor risk scores.</p>';$('rmore').classList.add('hide');return}
+ $('rchips').innerHTML=`<button class="chip ${!RBAND?'on':''}" data-rb="">All</button>`+CFG.bands.map(([b])=>`<button class="chip ${RBAND===b?'on':''}" data-rb="${b}">${b}</button>`).join('')+'<span class="why" style="margin:0 0 0 6px">Weights and band thresholds are editable in Settings.</span>';
+ const idx=SC.map((x,i)=>i).filter(i=>!RBAND||band(SC[i].s)===RBAND).sort((a,b)=>SC[b].s-SC[a].s||a-b);
+ $('rlist').innerHTML=idx.slice(0,RSHOWN).map(i=>`<button class="rowbtn" data-why="${i}"><span class="dot ${SC[i].s>=50?'High':SC[i].s>=25?'Medium':'Low'}"></span><span class="vn"><b>${esc(vname(i))}</b><small>${esc(vcode(i))}${hasSpend()&&SP[i]?' · spend '+money(SP[i]):''} · ${SC[i].f.length} factor${SC[i].f.length===1?'':'s'}</small></span><span class="pill ${band(SC[i].s)}">${SC[i].s}</span></button>`).join('')||'<p class="why">No vendors in this band.</p>';
+ $('rmore').classList.toggle('hide',idx.length<=RSHOWN);
+}
+$('rchips').onclick=e=>{const b=e.target.closest('button');if(!b||b.dataset.rb===undefined)return;RBAND=b.dataset.rb;RSHOWN=100;renderRisk()};
+$('rmore').onclick=()=>{RSHOWN+=100;renderRisk()};
+$('rlist').addEventListener('click',e=>{const w=e.target.closest('[data-why]');if(w)whySheet(+w.dataset.why)});
+
+/* ===== EXPORT ===== */
+function renderExport(){const b=$('xl'),c=EX.length?cur().filter(e=>CFG.sev[e.sev]):[];b.disabled=!EX.length;b.title=EX.length?'Download '+c.length+' selected exceptions across '+new Set(c.map(e=>e.i)).size+' vendors (follows the Review filters)':'Run validation first'}
+$('xl').onclick=()=>{
+ if(!window.XLSX)return showErr('The Excel library did not load (it needs access to cdnjs.cloudflare.com).');
+ if(!EX.length)return toast('Run validation first.');
+ const c=cur(),a=c.map(e=>({'Vendor Code':vcode(e.i),'Vendor Name':vname(e.i),'Exception Type':e.type,Severity:e.sev,'Field Value':e.val,Reason:e.why,'Risk Score':SC[e.i].s,'Process Owner':ownerOf(e.i)}));
+ const ids=[...new Set(c.map(e=>e.i))],full=ids.map(i=>Object.fromEntries(H.map((h,j)=>[h,S(ROWS[i][j])])));
+ const fl=[{Filter:'Exception types selected',Value:[...SEL].join('; ')},{Filter:'Category',Value:FIL.cat||'All'},{Filter:'Severity',Value:FIL.sev||'All'},{Filter:'Risk band',Value:FIL.band||'All'},{Filter:'Search',Value:FIL.q||''},{Filter:'Source file',Value:FNAME},{Filter:'Note',Value:'Offline format and logic checks. Indicative, rule-based scores.'}];
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(a),'Exceptions');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(full),'Vendor Rows');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fl),'Filters');
+ XLSX.writeFile(wb,'vendor-exceptions.xlsx');log('Excel exported',a.length+' exceptions, '+ids.length+' vendors; types: '+[...SEL].join(', ')+'; cat='+(FIL.cat||'all')+', sev='+(FIL.sev||'all')+', band='+(FIL.band||'all'));toast('Excel downloaded.');
+};
+VIEWRENDER.export=renderExport;
+$('xl').addEventListener('pointerenter',()=>{try{renderExport()}catch(e){}});
+
+/* ===== UDYAM VERIFICATION ASSIST: manual check, no API, no scraping ===== */
+const UDRX=/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/,UDRES=['Verified','Not found','Mismatch','Cancelled-Inactive'];
+const today=()=>new Date().toISOString().slice(0,10);
+function saveUdr(){kvSet('udr',UDR)}
+/* turn manual results into exceptions and re-score; render=true refreshes every screen */
+function applyUd(render){
+ EX=EX.filter(e=>!e.ud);
+ if(MAP.udyam!=null)ROWS.forEach((r,i)=>{
+  const u=norm(r[MAP.udyam]),x=UDR[u];if(!x||!x.res)return;
+  const add=(type,why)=>{if(CFG.off[type])return;const d=RTAB[type];EX.push({i,cat:d.cat,sev:CFG.sevOv[type]||d.sev,type,val:u,why,ud:true})};
+  if(x.res==='Not found')add('Udyam not found','URN was not found on the manual registry check.');
+  if(x.res==='Cancelled-Inactive')add('Udyam cancelled/inactive','Registry shows the registration as cancelled or inactive.');
+  if(x.res==='Mismatch'||(x.rn&&MAP.name!=null&&sim(S(r[MAP.name]),x.rn)<CFG.fuzzy))add('Udyam name mismatch','Registry name "'+S(x.rn)+'" differs from the master name.');
+  if(x.rc&&MAP.msme!=null&&x.rc.trim().toLowerCase()!==S(r[MAP.msme]).trim().toLowerCase())add('Udyam category mismatch','Registry category '+x.rc+' vs master '+S(r[MAP.msme])+'.');
+ });
+ if(ROWS.length)SC=scoreAll(EX,ROWS.length,cfgE());
+ EX.filter(e=>e.ud).forEach(e=>SEL.add(e.type));
+ if(render)renderAll();
+}
+function udList(){
+ if(!ROWS.length||MAP.udyam==null)return[];
+ const seen=new Set(),c=$('u_cat').value,b=$('u_band').value,pp=$('u_pay').checked;
+ return ROWS.map((r,i)=>i).filter(i=>{
+  const u=norm(gv(i,'udyam'));if(!UDRX.test(u)||seen.has(u))return false;
+  if(c&&gv(i,'msme').toLowerCase()!==c.toLowerCase())return false;
+  if(b&&band(SC[i]?SC[i].s:0)!==b)return false;
+  if(pp&&!(CFG.payDays[norm(gv(i,'pay'))]>45))return false;
+  seen.add(u);return true;
+ }).sort((a,b)=>(SC[b]?SC[b].s:0)-(SC[a]?SC[a].s:0)||(SP[b]||0)-(SP[a]||0));
+}
+function renderUd(){
+ UDW=udList();
+ if(!UDW.length){$('udcard').innerHTML='<div class="card"><p class="why" style="margin:0">'+(ROWS.length?'No vendors with a valid-format Udyam number match these filters.':'Run validation first. The worklist lists vendors whose Udyam number passes the format check.')+'</p></div>';return}
+ UDI=Math.max(0,Math.min(UDI,UDW.length-1));
+ const i=UDW[UDI],u=norm(gv(i,'udyam')),x=UDR[u]||{date:today()};
+ const done=UDW.filter(j=>(UDR[norm(gv(j,'udyam'))]||{}).res).length,C=2*Math.PI*28,pend=UDW.length-done;
+ const nm=x.rn?sim(vname(i),x.rn):null,cm=x.rc&&MAP.msme!=null?x.rc.trim().toLowerCase()===gv(i,'msme').trim().toLowerCase():null;
+ $('udcard').innerHTML=`<div class="card slide"><div style="display:flex;gap:16px;align-items:center"><svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="${done} of ${UDW.length} checked"><circle cx="32" cy="32" r="28" fill="none" stroke="var(--line)" stroke-width="6"/><circle cx="32" cy="32" r="28" fill="none" stroke="var(--acc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-done/UDW.length)}" transform="rotate(-90 32 32)" style="transition:stroke-dashoffset .6s var(--ease)"/></svg><div><b>${done} of ${UDW.length} checked</b><div class="why" style="margin:2px 0 0">${pend} pending. Not yet verified is a to-do, not a compliance exception. Vendor ${UDI+1} of ${UDW.length}; use the ← → keys.</div></div></div>
+ <p class="urn">${esc(u)}</p><p style="margin:0 0 12px"><button class="btn ghost" data-u="copy">Copy URN</button> <a class="btn" style="text-decoration:none;display:inline-block" href="https://udyamregistration.gov.in/Udyam_Verify.aspx" target="_blank" rel="noopener noreferrer">Open Udyam verification page</a></p>
+ <p class="why" style="margin-top:0"><b>${esc(vname(i))}</b> · ${esc(gv(i,'msme'))||'No category'} · ${esc(gv(i,'state'))} · PAN ${esc(gv(i,'pan'))} · risk <span class="pill ${band(SC[i].s)}">${SC[i].s}</span></p>
+ <div class="seg" role="group" aria-label="Verification result">${UDRES.map(r=>`<button class="chip ${x.res===r?'on':''}" data-u="res" data-r="${r}" aria-pressed="${x.res===r}">${r}</button>`).join('')}</div>
+ <div class="map"><div><label>Registry name</label><input data-u="rn" value="${esc(x.rn)}"></div><div><label>Registry category</label><input data-u="rc" value="${esc(x.rc)}"></div><div><label>Checked on</label><input data-u="date" type="date" value="${esc(x.date||today())}"></div><div><label>Evidence reference</label><input data-u="ev" value="${esc(x.ev)}"></div></div>
+ <label class="why" style="display:block;margin:12px 0 4px">Note</label><textarea data-u="note" rows="2">${esc(x.note)}</textarea>
+ <p class="why">${nm!==null?(nm<CFG.fuzzy?'Name does not match the master (Medium). ':'Name matches the master. '):''}${cm!==null?(cm?'Category matches.':'Category does not match (Medium).'):''}</p>
+ <p style="margin:12px 0 0"><button class="btn ghost" data-u="prev">Previous</button> <button class="btn" data-u="next">Next</button> <button class="btn ghost" data-u="xl">Excel: Udyam Verification</button></p></div>`;
+}
+['u_cat','u_band','u_pay'].forEach(id=>$(id).onchange=()=>{UDI=0;renderUd()});
+$('udcard').onclick=e=>{
+ const t=e.target.closest('[data-u]');if(!t||!UDW.length)return;const a=t.dataset.u,u=norm(gv(UDW[UDI],'udyam'));
+ if(a==='copy'){try{navigator.clipboard.writeText(u);toast('URN copied.')}catch(x){toast('Copy failed. Select the URN manually.')}}
+ if(a==='res'){UDR[u]=Object.assign({date:today()},UDR[u],{res:t.dataset.r});saveUdr();log('Udyam result',u+': '+t.dataset.r);applyUd(true)}
+ if(a==='prev'||a==='next'){UDI+=a==='next'?1:-1;ls('vmv_udidx',UDI);renderUd()}
+ if(a==='xl'){
+  if(!window.XLSX)return showErr('The Excel library did not load.');
+  const out=Object.entries(UDR).filter(([,x])=>x.res).map(([urn,x])=>{const i=ROWS.findIndex((r,k)=>norm(gv(k,'udyam'))===urn);return{'Vendor Code':i>=0?vcode(i):'','Vendor Name':i>=0?vname(i):'',URN:urn,Result:x.res||'','Registry Name':S(x.rn),'Registry Category':S(x.rc),'Master Category':i>=0?gv(i,'msme'):'','Checked On':x.date,'Evidence Ref':S(x.ev),Notes:S(x.note)}});
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(out),'Udyam Verification');XLSX.writeFile(wb,'udyam-verification.xlsx');log('Excel exported','Udyam Verification, '+out.length+' results');
+ }
+};
+$('udcard').onchange=e=>{
+ const t=e.target,f=t.dataset.u;if(!['rn','rc','date','ev','note'].includes(f)||!UDW.length)return;
+ const u=norm(gv(UDW[UDI],'udyam'));UDR[u]=Object.assign({date:today()},UDR[u],{[f]:t.value});saveUdr();log('Udyam result',u+' '+f+' updated');applyUd(true);
+};
+addEventListener('keydown',e=>{if($('v-udy').classList.contains('hide')||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight'){UDI++;renderUd()}if(e.key==='ArrowLeft'){UDI--;renderUd()}});
+
+/* ===== INTERNAL AUDIT QUERY EMAILS: to process owners only, never to vendors ===== */
+const wdAdd=(d,n)=>{d=new Date(d);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()%6)n--}return d};
+const wdBetween=(a,b)=>{let n=0,d=new Date(a);while(d<b){d.setDate(d.getDate()+1);if(d.getDay()%6)n++}return n};
+const saveQ=()=>kvSet('q',Q);
+const saveOwn=()=>kvSet('own',{OWNKEY,OWN,FB,DAYS});
+const emailEx=()=>EX.filter(e=>SEL.has(e.type)&&CFG.sev[e.sev]);
+function groupsByOwner(){const g={};emailEx().forEach(e=>(g[ownerOf(e.i)]=g[ownerOf(e.i)]||[]).push(e));return g}
+function bodyFor(xs){return 'Dear Process Owner,\n\nDuring the vendor master review we noted the exceptions below. Please review them and respond by '+fmtD(wdAdd(new Date(),DAYS))+' ('+DAYS+' working days) with the cause and the corrective action.\n\n'+xs.slice(0,40).map(e=>'- '+vname(e.i)+' ('+vcode(e.i)+'): '+e.type+'. '+e.why).join('\n')+(xs.length>40?'\n...and '+(xs.length-40)+' more exceptions; the full list is in the attached Excel.':'')+'\n\nThese are offline format and logic checks and need confirmation against source records.\n\n'+(ls('vmv_sig')||'')}
+function renderEmail(){
+ const g=groupsByOwner(),owners=Object.keys(g);
+ if(!owners.length){$('emails').innerHTML='<div class="card"><p class="why" style="margin:0">'+(ROWS.length?'No exceptions to route.':'Run validation first. Emails are grouped by the process owner you map in Settings.')+'</p></div>';return}
+ const warn=[];if(!FB)warn.push('Set a fallback owner email in Settings.');if(!OWNKEY)warn.push('Choose the field that routes exceptions to owners in Settings.');
+ $('emails').innerHTML=`<div class="card"><div class="rowh"><b>${owners.length} owner${owners.length>1?'s':''} to contact</b><button class="btn" data-a="all">Send all with Outlook (Graph)</button></div><p class="why">Drafts go only to the process owners you map, never to vendors. Response deadline: ${DAYS} working days. ${warn.map(esc).join(' ')}</p></div>`+
+ owners.map(o=>{const xs=g[o];if(!DR[o]||DR[o].n!==xs.length)DR[o]={n:xs.length,s:'Internal Audit Query: vendor master exceptions ('+xs.length+')',b:bodyFor(xs)};const st=STAT[o]||(Q[o]?{st:qstatus(Q[o])}:{st:'Pending'});
+  return `<div class="card"><div class="rowh"><b>${esc(o)}</b><span><span class="tag">${xs.length} exceptions</span> <span class="tag">${esc(st.st)}${st.msg?': '+esc(st.msg):''}</span></span></div>
+  <label class="why" style="display:block;margin:12px 0 4px">Subject</label><input data-o="${esc(o)}" data-f="s" value="${esc(DR[o].s)}" style="width:100%"><label class="why" style="display:block;margin:12px 0 4px">Message</label><textarea data-o="${esc(o)}" data-f="b" rows="8">${esc(DR[o].b)}</textarea>
+  <p style="margin:12px 0 0"><button class="btn ghost sm" data-a="prev" data-o="${esc(o)}">Preview</button> <button class="btn sm" data-a="graph" data-o="${esc(o)}">Send with Outlook (Graph)</button> <button class="btn ghost sm" data-a="mail" data-o="${esc(o)}">Open in Outlook</button> <button class="btn ghost sm" data-a="eml" data-o="${esc(o)}">Download .eml</button></p></div>`}).join('');
+}
+function snapshot(o){const xs=groupsByOwner()[o]||[];return xs.map(e=>({v:vname(e.i),c:vcode(e.i),t:e.type,w:e.why,res:'',note:''}))}
+function markSent(o,how){Q[o]={st:'Sent',sent:new Date().toISOString(),dl:wdAdd(new Date(),DAYS).toISOString(),items:snapshot(o),how};saveQ();STAT[o]={st:'Sent',msg:how}}
+function privacyOK(){if(PRIV)return true;if(!confirm('Privacy note: vendor data stays on this machine. Only the emails you choose to send leave it, and only to the internal process owners you mapped. Vendors are never emailed. Continue?'))return false;PRIV=true;return true}
+const validEmail=s=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s);
+const b64=s=>btoa(unescape(encodeURIComponent(s)));
+function emlOf(o){const d=DR[o];return 'To: '+o+'\r\nSubject: =?UTF-8?B?'+b64(d.s)+'?=\r\nX-Unsent: 1\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n'+b64(d.b).replace(/(.{76})/g,'$1\r\n')}
+/* Microsoft Graph via MSAL.js (popup sign-in, Mail.Send). The Client ID is read from Settings; no token is stored or logged. */
+const MSAL_SRC='https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js';let MSALAPP=null;
+async function graphToken(){
+ const cid=(ls('vmv_cid')||'').trim();if(!cid||/YOUR-/i.test(cid))throw new Error('Enter your Azure AD Client ID in Settings first.');
+ if(!window.msal)await new Promise((ok,no)=>{const s=document.createElement('script');s.src=MSAL_SRC;s.onload=ok;s.onerror=()=>no(new Error('Could not load MSAL.js.'));document.head.appendChild(s)});
+ if(!/^https?:/.test(location.protocol))throw new Error('Microsoft sign-in needs this page served over http(s), for example from localhost. Use Open in Outlook or the .eml download from a local file.');
+ if(!MSALAPP||MSALAPP._cid!==cid){MSALAPP=new msal.PublicClientApplication({auth:{clientId:cid,authority:'https://login.microsoftonline.com/common',redirectUri:location.href.split(/[?#]/)[0]},cache:{cacheLocation:'sessionStorage'}});MSALAPP._cid=cid}
+ const scopes=['Mail.Send'],acc=MSALAPP.getAllAccounts()[0];let r;
+ try{r=acc?await MSALAPP.acquireTokenSilent({scopes,account:acc}):await MSALAPP.loginPopup({scopes})}catch(e){r=await MSALAPP.loginPopup({scopes})}
+ return r.accessToken;
+}
+async function sendGraph(o){
+ if(!validEmail(o))throw new Error('No valid owner email; set a fallback owner in Settings.');
+ const t=await graphToken(),d=DR[o],xs=groupsByOwner()[o]||[];
+ const body=d.b.replace(/\.\.\.and \d+ more exceptions.*\n/,'')+(xs.length>40?'\n\nAdditional exceptions:\n'+xs.slice(40).map(e=>'- '+vname(e.i)+' ('+vcode(e.i)+'): '+e.type).join('\n'):'');
+ const r=await fetch('https://graph.microsoft.com/v1.0/me/sendMail',{method:'POST',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({message:{subject:d.s,body:{contentType:'Text',content:body},toRecipients:[{emailAddress:{address:o}}]},saveToSentItems:true})});
+ if(!r.ok)throw new Error('Graph returned '+r.status);
+}
+async function sendOne(o){try{await sendGraph(o);markSent(o,'Graph');log('Email sent',o+' via Microsoft Graph');return true}catch(e){STAT[o]={st:'Failed',msg:e.message};log('Email failed',o+': '+e.message);return false}}
+$('emails').addEventListener('change',e=>{const t=e.target,o=t.dataset.o;if(o&&DR[o]&&t.dataset.f)DR[o][t.dataset.f]=t.value});
+$('emails').addEventListener('click',async e=>{
+ const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,o=t.dataset.o;
+ if(a==='prev'){const d=DR[o];openSheet(`<h2>Preview</h2><p class="why" style="margin-top:0">To: ${esc(o)}</p><p><b>${esc(d.s)}</b></p><div style="white-space:pre-wrap;font-size:14px;border-top:1px solid var(--line);padding-top:12px">${esc(d.b)}</div>`);return}
+ if(!privacyOK())return;
+ if(a==='mail'){markSent(o,'mailto');log('Email drafted',o+' via Open in Outlook');renderEmail();const b=DR[o].b.length>1200?DR[o].b.slice(0,1200)+'\n\n[Shortened. Use the .eml download for the full list.]':DR[o].b;location.href='mailto:'+encodeURIComponent(o)+'?subject='+encodeURIComponent(DR[o].s)+'&body='+encodeURIComponent(b)}
+ if(a==='eml'){markSent(o,'.eml');log('Email drafted',o+' as .eml');dl(new Blob([emlOf(o)],{type:'message/rfc822'}),'query-'+S(o).replace(/\W/g,'_')+'.eml');renderEmail()}
+ if(a==='graph'){t.disabled=true;const ok=await sendOne(o);t.disabled=false;toast(ok?'Sent to '+o+'.':'Not sent: '+STAT[o].msg);renderEmail()}
+ if(a==='all'){let n=0;for(const ow of Object.keys(groupsByOwner())){if(await sendOne(ow))n++;else if(/Client ID|http\(s\)|MSAL/.test((STAT[ow]||{}).msg||''))break}toast(n+' email'+(n===1?'':'s')+' sent.');renderEmail()}
+});
+$('tabD').onclick=()=>{$('emails').classList.remove('hide');$('track').classList.add('hide');$('tabD').classList.add('on');$('tabT').classList.remove('on')};
+$('tabT').onclick=()=>{$('emails').classList.add('hide');$('track').classList.remove('hide');$('tabT').classList.add('on');$('tabD').classList.remove('on');renderTrack()};
+
+/* ===== QUERY TRACKING AND CLOSURE ===== */
+const qstatus=q=>(['Sent','Acknowledged'].includes(q.st)&&new Date()>new Date(q.dl))?'Overdue':q.st;
+function renderTrack(){
+ const os=Object.keys(Q),openO=[...document.querySelectorAll('#track details[open]')].map(d=>d.dataset.o);
+ if(!os.length){$('track').innerHTML='<div class="card"><p class="why" style="margin:0">Nothing has been sent yet. Statuses start when you send, open or download an email.</p></div>';return}
+ const open=os.filter(o=>Q[o].st!=='Closed'),bk=[['0 to 5 working days',0,5],['6 to 10 working days',6,10],['11 or more working days',11,1e9]].map(([l,a,b])=>[l,open.filter(o=>{const d=wdBetween(Q[o].sent,new Date());return d>=a&&d<=b}).length]);
+ $('track').innerHTML=`<div class="card"><span class="ct">Ageing of Open Queries</span>${bk.map(([l,n],k)=>`<div class="bar" style="grid-template-columns:170px 1fr 30px"><em>${l}</em><span class="trk"><i style="width:${n/Math.max(1,open.length)*100}%;background:var(--${['lo','md','hi'][k]})"></i></span><b>${n}</b></div>`).join('')}</div>`+
+ os.map(o=>{const q=Q[o],st=qstatus(q),age=wdBetween(q.sent,new Date()),items=q.items||[],rc=r=>items.filter(x=>x.res===r).length;
+  return `<div class="card"><div class="rowh"><b>${esc(o)}</b><span><span class="tag">${esc(st)}</span> <span class="tag">${age} working days open</span> <span class="tag">deadline ${esc(fmtD(q.dl))}</span></span></div>
+  <p style="margin:12px 0"><label class="why" style="margin-right:6px">Status</label><select data-q="st" data-o="${esc(o)}">${['Sent','Acknowledged','Responded','Closed'].map(s=>`<option ${q.st===s?'selected':''}>${s}</option>`).join('')}</select> <span class="why" style="margin-left:8px">Resolved ${rc('Resolved')} · Accepted risk ${rc('Accepted risk')} · Escalate ${rc('Escalate')} · Open ${items.length-rc('Resolved')-rc('Accepted risk')-rc('Escalate')}</span></p>
+  <details class="row" data-o="${esc(o)}" ${openO.includes(o)?'open':''}><summary><span class="vn"><b>${items.length} exceptions</b><small>Record a response and a resolution for each</small></span></summary>${items.map((x,k)=>`<div class="fr" style="display:block"><b>${esc(x.v)}</b> <span class="tag">${esc(x.t)}</span><div class="why" style="margin:4px 0 8px">${esc(x.w)}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><select data-q="ires" data-o="${esc(o)}" data-ix="${k}" aria-label="Resolution"><option value="">No resolution yet</option>${['Resolved','Accepted risk','Escalate'].map(r=>`<option ${x.res===r?'selected':''}>${r}</option>`).join('')}</select><input data-q="inote" data-o="${esc(o)}" data-ix="${k}" value="${esc(x.note)}" placeholder="Response note" style="flex:1;min-width:200px"></div></div>`).join('')}</details>
+  <p style="margin:12px 0 0"><button class="btn ghost sm" data-q="rem" data-o="${esc(o)}">Draft reminder</button></p></div>`}).join('')+'<p><button class="btn" data-q="xl">Excel closure summary</button></p>';
+}
+$('track').addEventListener('change',e=>{const t=e.target,o=t.dataset.o,f=t.dataset.q;if(!f||!Q[o])return;
+ if(f==='st'){Q[o].st=t.value;log('Query status changed',o+' to '+t.value)}
+ if(f==='ires'){Q[o].items[+t.dataset.ix].res=t.value;log('Query resolution',o+': '+Q[o].items[+t.dataset.ix].t+' marked '+(t.value||'open'))}
+ if(f==='inote'){Q[o].items[+t.dataset.ix].note=t.value;log('Query response note',o+': note updated')}
+ saveQ();if(f!=='inote')renderTrack()});
+$('track').addEventListener('click',e=>{
+ const t=e.target.closest('[data-q]');if(!t)return;const f=t.dataset.q,o=t.dataset.o;
+ if(f==='rem'){const q=Q[o],un=(q.items||[]).filter(x=>!x.res);if(!privacyOK())return;
+  const b='Dear Process Owner,\n\nThis is a reminder that our Internal Audit Query sent on '+fmtD(q.sent)+' was due on '+fmtD(q.dl)+'. '+un.length+' exception'+(un.length===1?'':'s')+' still need a response:\n\n'+un.slice(0,25).map(x=>'- '+x.v+' ('+x.c+'): '+x.t).join('\n')+(un.length>25?'\n...and '+(un.length-25)+' more.':'')+'\n\nPlease respond at the earliest.\n\n'+(ls('vmv_sig')||'');
+  log('Reminder drafted',o);location.href='mailto:'+encodeURIComponent(o)+'?subject='+encodeURIComponent('Reminder: '+((DR[o]&&DR[o].s)||'Internal Audit Query'))+'&body='+encodeURIComponent(b.slice(0,1400))}
+ if(f==='xl'){if(!window.XLSX)return showErr('The Excel library did not load.');
+  const sum=Object.entries(Q).map(([ow,q])=>{const it=q.items||[],c=r=>it.filter(x=>x.res===r).length;return{Owner:ow,Status:qstatus(q),Sent:fmtD(q.sent),Deadline:fmtD(q.dl),'Days open (working)':wdBetween(q.sent,new Date()),Exceptions:it.length,Resolved:c('Resolved'),'Accepted risk':c('Accepted risk'),Escalate:c('Escalate'),Open:it.length-c('Resolved')-c('Accepted risk')-c('Escalate')}});
+  const det=[];Object.entries(Q).forEach(([ow,q])=>(q.items||[]).forEach(x=>det.push({Owner:ow,'Vendor Code':x.c,'Vendor Name':x.v,Exception:x.t,Reason:x.w,Resolution:x.res||'Open','Response note':x.note})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sum),'Closure summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(det),'Exceptions');XLSX.writeFile(wb,'query-closure.xlsx');log('Excel exported','Query closure summary')}
+});
+
+/* ===== RISK & IMPACT LIBRARY (editable, persisted). Statutory references are prompts to verify, not legal advice. ===== */
+const V=' Verify against current law.';
+const INS_SRC=[
+{id:'pan',rx:/^PAN (missing|malformed)|^PAN derivable/,t:'PAN missing or malformed',sev:'High',risk:'Payments and tax reporting rely on a PAN that cannot be used, so the vendor cannot be reliably identified.',tags:[['Financial','Higher TDS and possible disallowance'],['Compliance','Withholding and reporting errors'],['Fraud','Weak identity assurance']],cause:'No PAN validation at vendor creation; manual keying.',crit:'Income-tax Act: higher TDS where a PAN is not furnished.'+V,act:'Obtain PAN proof, correct the master and add format validation at creation.',L:4,I:4},
+{id:'pan4',rx:/^PAN 4th|^PAN type vs/,t:'PAN type inconsistent with entity',sev:'Medium',risk:'The holder type in the PAN conflicts with the vendor name, which suggests a wrong PAN or wrong TDS treatment.',tags:[['Compliance','Wrong withholding category'],['Fraud','Possible borrowed PAN']],cause:'PAN keyed from the wrong document.',crit:'The 4th character of a PAN denotes the holder type.'+V,act:'Verify the PAN against registration documents.',L:3,I:3},
+{id:'gst',rx:/^GSTIN format|^GST state code|^GSTIN checksum/,t:'GSTIN structurally invalid',sev:'High',risk:'An invalid GSTIN puts input tax credit on these invoices at risk and may mean the vendor is not registered.',tags:[['Financial','Input tax credit loss'],['Compliance','GST return mismatches'],['Fraud','Fictitious vendor risk']],cause:'Manual entry; no checksum validation.',crit:'CGST Act input tax credit conditions (valid tax invoice from a registered supplier).'+V,act:'Confirm the GSTIN on the GST portal manually and correct the master.',L:4,I:4},
+{id:'gstpan',rx:/^PAN-in-GSTIN/,t:'PAN differs from the PAN inside the GSTIN',sev:'High',risk:'A GSTIN embeds the PAN, so a mismatch means one of the two is wrong or belongs to another entity.',tags:[['Compliance','ITC and TDS on the wrong identity'],['Fraud','Identity inconsistency']],cause:'Copy-paste or data-entry errors.',crit:'GSTIN structure: characters 3 to 12 equal the PAN.'+V,act:'Reconcile both numbers to the registration certificates.',L:4,I:4},
+{id:'gststate',rx:/^GST state vs/,t:'GST state differs from vendor state',sev:'Medium',risk:'Wrong place of supply and a wrong CGST/SGST versus IGST split.',tags:[['Financial','Tax split errors'],['Compliance','Return mismatches']],cause:'Master state not updated after a registration change.',crit:'GST place-of-supply rules.'+V,act:'Confirm the supplying location and correct the state.',L:3,I:3},
+{id:'udyam',rx:/^Udyam (malformed|state)|^MSME without|^MSME category blank|^Udyam with Not/,t:'MSME classification or Udyam number unreliable',sev:'Medium',risk:'Vendors may be wrongly treated as MSME or non-MSME, which distorts payment-term controls.',tags:[['Compliance','43B(h) and MSME-1 reporting'],['Financial','Interest and disallowance']],cause:'No Udyam validation at onboarding.',crit:'MSMED Act; Income-tax Act s.43B(h); MSME-1 reporting.'+V,act:'Obtain the Udyam certificate and correct the category.',L:3,I:3},
+{id:'udver',rx:/^Udyam (not found|cancelled|name|category)/,t:'Udyam manual verification failed',sev:'High',risk:'The registry result you recorded conflicts with the master, so MSME status is unreliable.',tags:[['Compliance','MSME status misreported'],['Financial','Payment-term errors']],cause:'Stale or incorrect registration data.',crit:'Udyam registry (checked manually by the auditor).'+V,act:'Obtain a current certificate and update the master.',L:3,I:4},
+{id:'b43',rx:/^43B|^Payment term unmapped/,t:'MSME payment terms above 45 days or unmapped',sev:'High',risk:'Amounts unpaid beyond the permitted period to Micro and Small suppliers may be disallowed and attract interest.',tags:[['Financial','Tax disallowance and interest'],['Compliance','MSMED Act breach'],['Reputational','Supplier complaints']],cause:'Default payment terms not aligned to MSME rules.',crit:'Income-tax Act s.43B(h); MSMED Act interest provisions.'+V,act:'Reset terms to 45 days or less and confirm written agreements exist.',L:4,I:4},
+{id:'bank',rx:/^IFSC|^Bank account invalid|^Bank country/,t:'Bank details invalid',sev:'High',risk:'Payments may fail or be misdirected.',tags:[['Financial','Misdirected payments'],['Operational','Failed payment runs'],['Fraud','Diversion risk']],cause:'Manual keying; no IFSC validation.',crit:'Internal payment control policy.',act:'Validate with a cancelled cheque or bank letter.',L:3,I:4},
+{id:'holder',rx:/^Holder/,t:'Account holder differs from vendor or is blank',sev:'High',risk:'Payments may go to a third party.',tags:[['Fraud','Third-party payee'],['Financial','Loss of funds']],cause:'No payee validation at onboarding.',crit:'Internal payment control policy.',act:'Obtain bank proof in the vendor name and block payment until cleared.',L:4,I:5},
+{id:'dup',rx:/^Duplicate|^Shared bank|^Possible duplicate/,t:'Duplicate vendors or shared bank accounts',sev:'High',risk:'Duplicate payments, or fictitious vendors sharing an account.',tags:[['Fraud','Fictitious or related vendors'],['Financial','Duplicate payment']],cause:'No duplicate check at creation.',crit:'Internal vendor onboarding control.',act:'Review, then merge or block the duplicates.',L:3,I:5},
+{id:'tds',rx:/^TDS/,t:'TDS configuration inconsistent',sev:'Medium',risk:'Wrong or higher-rate withholding.',tags:[['Financial','Wrong TDS'],['Compliance','Withholding errors']],cause:'Wrong code assigned to the vendor.',crit:'Income-tax Act TDS provisions; confirm against the ERP withholding-tax configuration.'+V,act:'Reconcile the section and code to the configuration.',L:3,I:3},
+{id:'sod',rx:/^Same user/,t:'Vendor created and approved by the same user',sev:'High',risk:'No independent check on new vendors, which enables fictitious vendor set-up.',tags:[['Fraud','Segregation of duties breach'],['Financial','Unauthorised payments']],cause:'Excess access or no workflow approval.',crit:'Internal segregation-of-duties policy.',act:'Review the vendors and restrict create/approve access.',L:3,I:5},
+{id:'blk',rx:/^Blocked vendor/,t:'Blocked vendor with recent transactions',sev:'High',risk:'Payments or postings to vendors that were meant to be blocked.',tags:[['Fraud','Bypassed block'],['Operational','Control override']],cause:'Block not enforced on all transaction types.',crit:'Internal vendor block policy.',act:'Investigate each posting and confirm the block applies to all paths.',L:3,I:4},
+{id:'master',rx:/^Search term|^Vendor Code vs|^Value outside|^Address blank|^Payment terms blank|^Vendor name blank/,t:'Master data completeness and consistency',sev:'Medium',risk:'Blank or inconsistent master fields weaken matching, reporting and payment controls.',tags:[['Operational','Rework and failed matching'],['Compliance','Incomplete vendor records']],cause:'No mandatory-field or allowed-value checks.',crit:'Internal master data policy.',act:'Complete the fields and enforce mandatory and allowed-value checks.',L:3,I:2},
+{id:'other',rx:/^PIN|^Vendor email|^Phone|^Raw formatting/,t:'Basic data-quality gaps',sev:'Low',risk:'Poor data quality hampers communication and matching.',tags:[['Operational','Rework and failed contact'],['Reputational','Vendor friction']],cause:'No field validation on entry.',crit:'Internal master data policy.',act:'Cleanse the data and add input validation.',L:2,I:2}];
+const DEFAULT_INS=INS_SRC.map(c=>{const o=Object.assign({},c,{rxs:c.rx.source,resp:'Management will [action] by [date]. Owner: [name].'});delete o.rx;return o});
+let INS=JSON.parse(JSON.stringify(DEFAULT_INS)),BMK=[],BASK=[],OBS={},EXS=null,RAILTAB='cards',AFFC={};
+const rxOf=c=>c._rx||(c._rx=new RegExp(c.rxs,'i'));
+const affSet=c=>AFFC[c.id]||(AFFC[c.id]=(()=>{const r=rxOf(c),s=new Set();for(const e of EX)if(e.sev!=='Info'&&r.test(e.type))s.add(e.i);return s})());
+const aff=c=>affSet(c).size;
+const exposure=c=>[...affSet(c)].reduce((a,i)=>a+(SP[i]||0),0);
+const rate=c=>{const v=c.L*c.I;return v>=15?'High':v>=8?'Medium':'Low'};
+const saveLib=()=>kvSet('lib',INS.map(c=>{const o=Object.assign({},c);delete o._rx;return o}));
+const saveRail=()=>kvSet('rail',{BMK,BASK,OBS,EXS});
+function obsOf(c){const n=aff(c);return OBS[c.id]||(OBS[c.id]={c:n+' of '+ROWS.length+' vendors ('+(ROWS.length?Math.round(n/ROWS.length*100):0)+'%) show: '+c.t.toLowerCase()+'.'+(hasSpend()?' Spend exposed: '+money(exposure(c))+'.':''),cr:c.crit,ca:c.cause,ef:c.risk,rc:c.act,mr:'',rt:rate(c)})}
+function openInsight(type){const c=INS.find(c=>rxOf(c).test(type));if(!c)return;$('rail').classList.add('open');RAILTAB='cards';renderRail();const d=document.querySelector('#rail [data-c="'+c.id+'"]');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}}
+function cardHTML(c,bm){
+ const n=aff(c),b=BMK.includes(c.id),i=BMK.indexOf(c.id);
+ return `<details class="row" data-c="${esc(c.id)}" ${bm?'draggable="true" data-bm="'+esc(c.id)+'"':''}><summary><span class="dot ${c.sev}"></span><span class="vn"><b>${esc(c.t)}</b><small>${n} vendor${n===1?'':'s'} affected</small></span><span class="pill ${rate(c)}">${rate(c)}</span></summary>
+ <p class="why"><b>Risk.</b> ${esc(c.risk)}</p>
+ <p class="why">${c.tags.map(t=>`<span class="tag">${esc(t[0])}</span> ${esc(t[1])}`).join('<br>')}</p>
+ <p class="why">Likelihood <select data-c="${esc(c.id)}" data-k="L" aria-label="Likelihood">${[1,2,3,4,5].map(v=>`<option ${v===c.L?'selected':''}>${v}</option>`).join('')}</select> × Impact <select data-c="${esc(c.id)}" data-k="I" aria-label="Impact">${[1,2,3,4,5].map(v=>`<option ${v===c.I?'selected':''}>${v}</option>`).join('')}</select> = ${c.L*c.I} (${rate(c)})</p>
+ <p class="why"><b>Typical causes.</b> ${esc(c.cause)}</p>
+ <label class="why" style="display:block;margin:10px 0 4px"><b>Criteria / reference</b> (editable)</label><textarea data-c="${esc(c.id)}" data-k="crit" rows="3">${esc(c.crit)}</textarea>
+ <p class="why"><b>Recommended action.</b> ${esc(c.act)}</p>
+ <label class="why" style="display:block;margin:10px 0 4px"><b>Management response template</b></label><textarea data-c="${esc(c.id)}" data-k="resp" rows="2">${esc(c.resp)}</textarea>
+ <p class="why">Spend exposed: ${hasSpend()?'<b>'+money(exposure(c))+'</b>':'<span class="tag">Not applicable: column not in this file</span>'}</p>
+ <p style="margin:10px 0 0"><button class="chip ${b?'on':''}" data-a="bm" data-c="${esc(c.id)}">${b?'★ Bookmarked':'☆ Bookmark'}</button> <button class="chip ${BASK.includes(c.id)?'on':''}" data-a="add" data-c="${esc(c.id)}">${BASK.includes(c.id)?'In report':'Add to report'}</button>${bm?` <button class="chip" data-a="up" data-c="${esc(c.id)}" aria-label="Move up" ${i<1?'disabled':''}>↑</button> <button class="chip" data-a="dn" data-c="${esc(c.id)}" aria-label="Move down" ${i>=BMK.length-1?'disabled':''}>↓</button>`:''}${c.custom?` <button class="chip" data-a="del" data-c="${esc(c.id)}">Delete</button>`:''}</p></details>`;
+}
+function libraryHTML(){
+ return `<div class="card" style="padding:16px"><span class="ct">Add a Custom Card</span>
+ <input data-lib="t" placeholder="Title" style="width:100%;margin-bottom:8px"><input data-lib="m" placeholder="Match exception types containing (comma separated)" style="width:100%;margin-bottom:8px"><select data-lib="sev" style="margin-bottom:8px">${['High','Medium','Low'].map(s=>`<option>${s}</option>`).join('')}</select>
+ <textarea data-lib="risk" rows="2" placeholder="Risk in plain language" style="margin-bottom:8px"></textarea><textarea data-lib="cause" rows="2" placeholder="Typical causes" style="margin-bottom:8px"></textarea><textarea data-lib="crit" rows="2" placeholder="Criteria / reference" style="margin-bottom:8px"></textarea><textarea data-lib="act" rows="2" placeholder="Recommended action" style="margin-bottom:8px"></textarea>
+ <button class="btn sm" data-a="lib-add">Add card</button></div>
+ <div class="card" style="padding:16px"><span class="ct">Library</span><p class="chips" style="margin:0"><button class="btn ghost sm" data-a="lib-exp">Export JSON</button><button class="btn ghost sm" data-a="lib-imp">Import JSON</button><button class="btn ghost sm" data-a="lib-reset">Reset to defaults</button></p><input type="file" id="libfile" accept=".json" hidden>
+ <p class="why">${INS.length} cards, ${INS.filter(c=>c.custom).length} custom. Edits to criteria, ratings and templates are saved in this browser.</p></div>`;
+}
+function renderRail(){
+ AFFC={};
+ const r=$('rail'),op=[...r.querySelectorAll('details[open]')].map(d=>d.dataset.c||d.dataset.o),sy=r.scrollTop;
+ $('bmc').textContent=BASK.length?'('+BASK.length+')':'';
+ const tabs=[['cards','All'],['bm','Bookmarked'],['rep','Report ('+BASK.length+')'],['lib','Library']].map(([k,l])=>`<button class="chip ${RAILTAB===k?'on':''}" data-a="tab" data-k="${k}">${l}</button>`).join('');
+ let body='';
+ if(RAILTAB==='cards')body=EX.length?INS.filter(c=>aff(c)>0).map(c=>cardHTML(c,false)).join('')||'<p class="why">No exceptions match any card.</p>':'<p class="why">Run validation to see live insights.</p>';
+ if(RAILTAB==='bm')body=BMK.map(id=>INS.find(c=>c.id===id)).filter(Boolean).map(c=>cardHTML(c,true)).join('')||'<p class="why">No bookmarks yet. Bookmark a card, then drag or use the arrows to reorder.</p>';
+ if(RAILTAB==='lib')body=libraryHTML();
+ if(RAILTAB==='rep'){
+  const items=BASK.map(id=>INS.find(c=>c.id===id)).filter(Boolean),n=items.length;
+  if(!EXS||EXS.auto)EXS={auto:true,t:n?'The vendor master review of '+ROWS.length+' records raised '+n+' observation'+(n===1?'':'s')+': '+items.map(c=>c.t+' ('+aff(c)+' vendors, '+obsOf(c).rt+' rating)').join('; ')+'. Findings are indicative and rule-based, and statutory references need verification before reporting.':''};
+  body=`<label class="why" style="display:block;margin:0 0 4px"><b>Executive summary</b> (editable)</label><textarea data-a="exs" rows="4">${esc(EXS.t)}</textarea>`+items.map(c=>{const o=obsOf(c);return `<details class="row" data-o="${esc(c.id)}" open><summary><span class="vn"><b>${esc(c.t)}</b></span><span class="pill ${o.rt}">${o.rt}</span></summary>${[['c','Condition'],['cr','Criteria'],['ca','Cause'],['ef','Effect'],['rc','Recommendation'],['mr','Management response']].map(([k,l])=>`<label class="why" style="display:block;margin:8px 0 3px">${l}</label><textarea data-o="${esc(c.id)}" data-k="${k}" rows="2">${esc(o[k])}</textarea>`).join('')}<p class="why">Rating <select data-o="${esc(c.id)}" data-k="rt">${['High','Medium','Low'].map(v=>`<option ${o.rt===v?'selected':''}>${v}</option>`).join('')}</select> <button class="chip" data-a="copy" data-c="${esc(c.id)}">Copy</button> <button class="chip" data-a="rm" data-c="${esc(c.id)}">Remove</button></p></details>`}).join('')+(n?'<p class="chips"><button class="btn sm" data-a="doc">Word (.doc)</button><button class="btn ghost sm" data-a="oxl">Excel</button></p>':'<p class="why">Use “Add to report” on a card to build observations.</p>');
+ }
+ r.innerHTML=`<div class="rowh" style="align-items:center"><b style="font-size:17px">Risk &amp; Impact</b><button class="chip" data-a="close">Close</button></div><div class="chips" style="margin:12px 0">${tabs}</div>${body}<p class="note">Supports professional judgement, not legal or tax advice. Verify statutory references before reporting.</p>`;
+ r.querySelectorAll('details').forEach(d=>{if(op.includes(d.dataset.c||d.dataset.o))d.open=true});r.scrollTop=sy;
+}
+$('bm').onclick=()=>{$('rail').classList.add('open');ls('vmv_rail','1');renderRail()};
+const obsText=(c,o)=>c.t+'\nCondition: '+o.c+'\nCriteria: '+o.cr+'\nCause: '+o.ca+'\nEffect: '+o.ef+'\nRecommendation: '+o.rc+'\nManagement response: '+o.mr+'\nRating: '+o.rt;
+$('rail').addEventListener('click',e=>{
+ const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=INS.find(x=>x.id===t.dataset.c);
+ if(a==='exs')return;
+ if(a==='close'){$('rail').classList.remove('open');ls('vmv_rail','0');return}
+ if(a==='tab')RAILTAB=t.dataset.k;
+ if(a==='bm'){BMK=BMK.includes(c.id)?BMK.filter(x=>x!==c.id):[...BMK,c.id];log('Bookmark changed',c.id+' '+(BMK.includes(c.id)?'added':'removed'));saveRail()}
+ if(a==='up'||a==='dn'){const i=BMK.indexOf(c.id),j=a==='up'?i-1:i+1;if(j>=0&&j<BMK.length){[BMK[i],BMK[j]]=[BMK[j],BMK[i]];log('Bookmark changed','reordered');saveRail()}}
+ if(a==='add'&&!BASK.includes(c.id)){BASK.push(c.id);delete OBS[c.id];EXS=null;log('Report basket changed','added '+c.id);saveRail()}
+ if(a==='rm'){BASK=BASK.filter(x=>x!==c.id);EXS=null;log('Report basket changed','removed '+c.id);saveRail()}
+ if(a==='del'){INS=INS.filter(x=>x.id!==c.id);BMK=BMK.filter(x=>x!==c.id);BASK=BASK.filter(x=>x!==c.id);saveLib();saveRail();log('Library edited','deleted custom card '+c.t)}
+ if(a==='copy'){try{navigator.clipboard.writeText(obsText(c,obsOf(c)));toast('Observation copied.')}catch(x){toast('Copy failed.')}return}
+ if(a==='doc'){exportDoc();return}if(a==='oxl'){exportObsXl();return}
+ if(a==='lib-add'){const g=k=>{const el=$('rail').querySelector('[data-lib="'+k+'"]');return el?el.value.trim():''},m=g('m').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!g('t')||!m.length){toast('Add a title and at least one match term.');return}
+  INS.push({id:'c'+Date.now(),custom:true,t:g('t'),sev:g('sev')||'Medium',risk:g('risk'),tags:[['Compliance','Custom card']],cause:g('cause'),crit:g('crit'),act:g('act'),L:3,I:3,resp:'Management will [action] by [date]. Owner: [name].',rxs:m.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')});saveLib();log('Library edited','added custom card '+g('t'));toast('Card added.');RAILTAB='cards'}
+ if(a==='lib-exp'){dl(new Blob([JSON.stringify(INS.map(c=>{const o=Object.assign({},c);delete o._rx;return o}),null,2)],{type:'application/json'}),'insights-library.json');log('Library edited','exported JSON');return}
+ if(a==='lib-imp'){$('libfile').click();return}
+ if(a==='lib-reset'){if(!confirm('Reset the library to defaults? Custom cards and edits will be lost.'))return;INS=JSON.parse(JSON.stringify(DEFAULT_INS));BMK=[];BASK=[];OBS={};EXS=null;saveLib();saveRail();log('Library edited','reset to defaults')}
+ renderRail();
+});
+$('rail').addEventListener('change',e=>{
+ const t=e.target,d=t.dataset;
+ if(t.id==='libfile'&&t.files[0]){const r=new FileReader();r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a)||!a.every(c=>c.id&&c.t&&c.rxs))throw new Error('Not a library file.');a.forEach(c=>new RegExp(c.rxs));INS=a;saveLib();log('Library edited','imported JSON, '+a.length+' cards');renderRail();toast('Library imported.')}catch(x){toast('Import failed: '+x.message)}};r.readAsText(t.files[0]);return}
+ if(d.a==='exs'){EXS={t:t.value};saveRail();return}
+ if(d.c&&d.k){const c=INS.find(x=>x.id===d.c);c[d.k]=['L','I'].includes(d.k)?+t.value:t.value;delete OBS[c.id];saveLib();log('Library edited',c.id+' '+d.k+' changed');renderRail()}
+ if(d.o){obsOf(INS.find(x=>x.id===d.o))[d.k]=t.value;saveRail();log('Report basket changed','edited '+d.o+' '+d.k);if(d.k==='rt'){EXS=null;renderRail()}}
+});
+let DRG=null;
+$('rail').addEventListener('dragstart',e=>{const d=e.target.closest('[data-bm]');DRG=d?d.dataset.bm:null});
+$('rail').addEventListener('dragover',e=>{if(DRG)e.preventDefault()});
+$('rail').addEventListener('drop',e=>{const to=e.target.closest('[data-bm]');if(!to||!DRG||to.dataset.bm===DRG)return;e.preventDefault();const a=BMK.filter(x=>x!==DRG);a.splice(a.indexOf(to.dataset.bm),0,DRG);BMK=a;DRG=null;saveRail();log('Bookmark changed','reordered by drag');renderRail()});
+function exportDoc(){
+ const items=BASK.map(id=>INS.find(c=>c.id===id)).filter(Boolean);
+ const h='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>Audit observations</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}h1{font-size:20pt}h2{font-size:14pt;page-break-before:always}</style></head><body><h1>Vendor master review: audit observations</h1><p>Source: '+esc(FNAME)+' · '+ROWS.length+' vendors · prepared '+esc(fmtD(new Date()))+'</p><h3>Executive summary</h3><p>'+esc(EXS?EXS.t:'')+'</p><p><i>Findings are indicative and rule-based, from offline format and logic checks. Statutory references must be verified before reporting. This is not legal or tax advice.</i></p>'+
+ items.map(c=>{const o=obsOf(c);return '<h2>'+esc(c.t)+' ('+esc(o.rt)+')</h2>'+[['Condition','c'],['Criteria','cr'],['Cause','ca'],['Effect','ef'],['Recommendation','rc'],['Management response','mr']].map(([l,k])=>'<p><b>'+l+':</b> '+esc(o[k])+'</p>').join('')}).join('')+'</body></html>';
+ dl(new Blob(['﻿',h],{type:'application/msword'}),'audit-observations.doc');log('Observations exported','Word, '+items.length+' observations');
+}
+function exportObsXl(){
+ if(!window.XLSX)return showErr('The Excel library did not load.');
+ const rows=BASK.map(id=>INS.find(c=>c.id===id)).filter(Boolean).map(c=>{const o=obsOf(c);return{Observation:c.t,Condition:o.c,Criteria:o.cr,Cause:o.ca,Effect:o.ef,Recommendation:o.rc,'Management Response':o.mr,Rating:o.rt}});
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Observations');XLSX.writeFile(wb,'audit-observations.xlsx');log('Observations exported','Excel, '+rows.length+' observations');
+}
+
+/* ===== SETTINGS ===== */
+const OWNOPTS=[['state','State'],['role','Vendor Role / Type'],['recon','Reconciliation Account'],['acctGroup','Account Group'],['companyCode','Company Code'],['tds','TDS Section'],['tdsCode','TDS Code']];
+const distinct=k=>MAP[k]==null?[]:[...new Set(ROWS.map(r=>S(r[MAP[k]]).trim().toUpperCase()).filter(Boolean))].sort();
+const mapText=(o,list)=>Object.entries(o).map(([k,v])=>k+'='+(list?v.join(','):v)).join('\n');
+function parseMap(text,kind){const o={};S(text).split(/\r?\n/).forEach(l=>{const m=l.split(/[=:]/);if(m.length<2)return;const k=m[0].trim().toUpperCase(),v=m.slice(1).join('=').trim();if(!k||!v)return;o[k]=kind==='list'?v.split(',').map(norm).filter(Boolean):kind==='num'?(isNaN(+v)?0:+v):v});return o}
+const rescore=()=>{if(!ROWS.length)return renderAll();SC=scoreAll(EX,ROWS.length,cfgE());renderAll()};
+function renderSet(){
+ const have=ROWS.length>0,cats=[...new Set(RULES.map(r=>r[1]))];
+ const naOf=needs=>have?needs.filter(k=>MAP[k]==null):[];
+ const ownKeys=OWNOPTS.filter(([k])=>MAP[k]!=null||OWNKEY===k);
+ $('setbox').innerHTML=`
+ <div class="card"><span class="ct">You</span><div class="map"><div><label for="s_user">User label (shown in the audit trail)</label><input id="s_user" value="${esc(ls('vmv_user')||'')}" placeholder="Auditor"></div><div><label for="s_dl">Response deadline (working days)</label><input id="s_dl" type="number" min="1" value="${DAYS}"></div></div>
+  <label class="why" style="display:block;margin:14px 0 4px" for="s_sig">Email signature</label><textarea id="s_sig" rows="3">${esc(ls('vmv_sig')||'')}</textarea></div>
+ <div class="card"><span class="ct">Sending from Outlook (Microsoft Graph)</span><div class="map"><div><label for="s_cid">Azure AD Application (client) ID</label><input id="s_cid" value="${esc(ls('vmv_cid')||'')}" placeholder="YOUR-AZURE-AD-CLIENT-ID" autocomplete="off"></div></div>
+  <ol class="why" style="padding-left:20px"><li>In the Azure portal, open App registrations and register a new app (single-page application).</li><li>Add a redirect URI that matches where you open this file, for example http://localhost:8080/.</li><li>Under API permissions, add Microsoft Graph, delegated, Mail.Send.</li><li>Paste the application (client) ID above.</li><li>Open this file from that http(s) address. Microsoft sign-in does not work from a local file; Open in Outlook and .eml still do.</li></ol><p class="why">Only the client ID is stored. Tokens are never stored or logged.</p></div>
+ <div class="card"><span class="ct">Risk Scoring</span>
+  <div class="map">${['High','Medium','Low'].map(k=>`<div><label>${k} severity weight</label><input data-w="${k}" type="number" min="0" value="${CFG.sev[k]}"></div>`).join('')}</div>
+  <div class="mgt">Uplifts</div><div class="map">${Object.keys(UPL).map(k=>`<div><label>${esc(UPL[k])}</label><input data-up="${k}" type="number" min="0" value="${CFG.uplift[k]}"></div>`).join('')}</div>
+  <div class="mgt">Band thresholds (minimum score)</div><div class="map">${CFG.bands.slice(0,3).map(([b,m])=>`<div><label>${b}</label><input data-bd="${b}" type="number" min="1" max="100" value="${m}"></div>`).join('')}</div>
+  <div class="mgt">Matching</div><div class="map"><div><label for="s_fz">Name match threshold, account holder and Udyam (0 to 1)</label><input id="s_fz" type="number" step=".05" min="0" max="1" value="${CFG.fuzzy}"></div><div><label for="s_dn">Duplicate-name threshold (0 to 1)</label><input id="s_dn" type="number" step=".05" min="0" max="1" value="${CFG.dupName}"></div><div><label for="s_rd">Recent transaction window (days)</label><input id="s_rd" type="number" min="1" value="${CFG.recentDays}"></div></div>
+  <p style="margin:14px 0 0"><button class="btn ghost" id="s_reset">Reset to defaults</button></p></div>
+ <div class="card"><span class="ct">Rules</span>${have?'':'<p class="why" style="margin-top:0">Load a file to see which rules apply to its columns.</p>'}
+  ${cats.map(c=>`<div class="mgt">${c}</div>${RULES.filter(r=>r[1]===c).map(([t,,sv,needs])=>{const na=naOf(needs),off=CFG.off[t];return `<div class="fr" style="align-items:center;flex-wrap:wrap"><span>${esc(t)}${na.length?` <span class="tag">Not applicable: column not in this file</span>`:''}</span><span style="display:flex;gap:8px;align-items:center"><select data-rs="${esc(t)}" aria-label="Severity for ${esc(t)}" ${na.length?'disabled':''}>${['High','Medium','Low','Info'].map(x=>`<option ${(CFG.sevOv[t]||sv)===x?'selected':''}>${x}</option>`).join('')}</select><button class="chip ${off||na.length?'':'on'}" data-r="${esc(t)}" aria-pressed="${!off}" ${na.length?'disabled':''}>${off?'Off':'On'}</button></span></div>`}).join('')}`).join('')}</div>
+ <div class="card"><span class="ct">Allowed Values</span><p class="why" style="margin-top:0">Seeded from the values in the loaded file, so edit them to the values your policy allows. Anything else is flagged as Low.</p>
+  ${ALLOW_KEYS.filter(k=>MAP[k]!=null).map(k=>`<label class="why" style="display:block;margin:10px 0 4px">${esc(LAB[k])} (comma separated)</label><textarea data-al="${k}" rows="1">${esc((CFG.allowed[k]||[]).join(', '))}</textarea>`).join('')||'<p class="why">Load a file to edit allowed values.</p>'}</div>
+ <div class="card"><span class="ct">Reference Maps</span><p class="why" style="margin-top:0">One entry per line, KEY=value. Changing a map re-runs validation.</p>
+  ${[['gstState','State code to GST state code (all states and UTs)','str'],['payDays','Payment term code to days','num'],['tdsPrefix','TDS section to code prefix','str'],['panEntity','PAN 4th character to name suffixes (finding)','list'],['panEntityLow','PAN 4th character to name suffixes (advisory only)','list']].map(([k,l,kind])=>`<label class="why" style="display:block;margin:12px 0 4px">${l}</label><textarea data-map="${k}" data-kind="${kind}" rows="4">${esc(mapText(CFG[k],kind==='list'))}</textarea>`).join('')}
+  <label class="why" style="display:block;margin:12px 0 4px">TDS code to allowed PAN 4th characters (to be confirmed)</label><textarea data-map="tdsEntity" data-kind="list" rows="3" placeholder="Empty by default. Example: C1=C,F">${esc(mapText(CFG.tdsEntity,true))}</textarea>
+  <p class="why">Shipped empty on purpose: statutory rates and code-to-entity assumptions are not hard-coded. Confirm against the client's ERP withholding-tax configuration.</p></div>
+ <div class="card"><span class="ct">Process Owner Routing</span><div class="map"><div><label for="s_key">Route exceptions by</label><select id="s_key"><option value="">Choose a field</option>${OWNOPTS.filter(([k])=>ownKeys.some(o=>o[0]===k)).map(([k,l])=>{const n=distinct(k).length;return `<option value="${k}" ${OWNKEY===k?'selected':''} ${have&&n<2&&OWNKEY!==k?'disabled':''}>${l}${have&&n<2?' (single value, cannot route)':''}</option>`}).join('')}</select></div><div><label for="s_fb">Fallback owner email (required)</label><input id="s_fb" value="${esc(FB)}" placeholder="owner@example.com"></div></div>
+  <label class="why" style="display:block;margin:14px 0 4px" for="s_own">Mapping, one per line: value,owner@email</label><textarea id="s_own" rows="5">${esc(Object.entries(OWN).map(x=>x.join(',')).join('\n'))}</textarea>
+  <p class="why">${OWNKEY&&distinct(OWNKEY).length?'Values in this file: '+esc(distinct(OWNKEY).slice(0,40).join(', ')):'Pick a routing field to see the values in your file.'}</p>
+  <p style="margin:12px 0 0"><button class="btn ghost sm" id="s_tpl">Download template</button> <button class="btn ghost sm" id="s_imp">Import CSV</button><input id="s_f" type="file" accept=".csv" hidden></p><p class="why">Vendor Email is the vendor's address and is never used as an owner email.</p></div>`;
+}
+const setOwn=text=>{OWN={};S(text).split(/\r?\n/).forEach(l=>{const[a,...b]=l.split(',');if(a&&b.length&&!/^value$/i.test(a.trim()))OWN[a.trim().toUpperCase()]=b.join(',').trim()});saveOwn();log('Owner mapping edited',Object.keys(OWN).length+' rows')};
+$('v-set').addEventListener('change',e=>{
+ const t=e.target,d=t.dataset;
+ if(t.id==='s_user'){ls('vmv_user',t.value.trim());log('Settings changed','user label updated')}
+ else if(t.id==='s_dl'){DAYS=Math.max(1,+t.value||5);saveOwn();renderEmail()}
+ else if(t.id==='s_sig'){ls('vmv_sig',t.value);log('Settings changed','email signature saved')}
+ else if(t.id==='s_cid'){ls('vmv_cid',t.value.trim());log('Settings changed','Microsoft Graph client ID updated')}
+ else if(d.w){CFG.sev[d.w]=Math.max(0,+t.value||0);saveCfg();log('Weights changed',d.w+'='+CFG.sev[d.w]);rescore()}
+ else if(d.up){CFG.uplift[d.up]=Math.max(0,+t.value||0);saveCfg();log('Risk settings','uplift '+d.up+'='+CFG.uplift[d.up]);rescore()}
+ else if(d.bd){const v={};document.querySelectorAll('[data-bd]').forEach(i=>v[i.dataset.bd]=Math.min(100,Math.max(1,+i.value||1)));CFG.bands=[['Critical',v.Critical],['High',v.High],['Medium',v.Medium],['Low',0]].sort((a,b)=>b[1]-a[1]);saveCfg();log('Risk settings','bands '+CFG.bands.map(b=>b.join(':')).join(', '));rescore()}
+ else if(t.id==='s_fz'){CFG.fuzzy=+t.value||.6;saveCfg();log('Risk settings','name match threshold '+CFG.fuzzy);validate()}
+ else if(t.id==='s_dn'){CFG.dupName=+t.value||.85;saveCfg();log('Risk settings','duplicate-name threshold '+CFG.dupName);validate()}
+ else if(t.id==='s_rd'){CFG.recentDays=Math.max(1,+t.value||90);saveCfg();log('Risk settings','recent transaction window '+CFG.recentDays);validate()}
+ else if(d.rs){const def=RTAB[d.rs].sev;if(t.value===def)delete CFG.sevOv[d.rs];else CFG.sevOv[d.rs]=t.value;saveCfg();log('Risk settings','severity of '+d.rs+' set to '+t.value);validate()}
+ else if(d.al){CFG.allowed[d.al]=t.value.split(',').map(x=>x.trim()).filter(Boolean);log('Risk settings','allowed values edited: '+LAB[d.al]);validate()}
+ else if(d.map){CFG[d.map]=parseMap(t.value,d.kind);saveCfg();log('Risk settings','reference map edited: '+d.map);validate()}
+ else if(t.id==='s_key'){OWNKEY=t.value;saveOwn();log('Owner mapping edited','routing field '+(t.value||'none'));renderEmail()}
+ else if(t.id==='s_fb'){FB=t.value.trim();saveOwn();renderEmail()}
+ else if(t.id==='s_own'){setOwn(t.value);renderEmail()}
+ else if(t.id==='s_f'&&t.files[0]){const r=new FileReader();r.onload=()=>{setOwn(S(r.result).split(/\r?\n/).filter(l=>l.trim()).join('\n'));renderSet();renderEmail()};r.readAsText(t.files[0]);t.value=''}
+});
+$('v-set').addEventListener('click',e=>{
+ const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.r){CFG.off[t.dataset.r]=!CFG.off[t.dataset.r];if(!CFG.off[t.dataset.r])delete CFG.off[t.dataset.r];saveCfg();log('Rule toggled',t.dataset.r+' '+(CFG.off[t.dataset.r]?'off':'on'));validate()}
+ if(t.id==='s_reset'){if(!confirm('Reset weights, uplifts, bands, thresholds, rules and reference maps to the defaults?'))return;const d=JSON.parse(DEF_CFG);CFG_KEYS.forEach(k=>CFG[k]=d[k]);saveCfg();log('Settings reset','risk settings, rules and maps reset to defaults');ROWS.length?validate():renderSet()}
+ if(t.id==='s_tpl')$('tplOwner').click();
+ if(t.id==='s_imp')$('s_f').click();
+});
+
+/* ===== TRAIL CONTROLS ===== */
+$('tf').onchange=renderTrail;$('tfrom').onchange=renderTrail;$('tto').onchange=renderTrail;
+$('ver').onclick=verifyTrail;$('txl').onclick=trailExcel;$('tprint').onclick=()=>{log('Trail exported','print view');window.print()};
+
+/* ===== STARTUP ===== */
+function hydrate(){
+ /* Saved data may come from an older version or be damaged: accept only values of the expected shape, otherwise keep defaults. */
+ const isObj=v=>v&&typeof v==='object'&&!Array.isArray(v),def=JSON.parse(DEF_CFG),tryDo=(label,fn)=>{try{fn()}catch(e){console.warn('Ignored saved '+label+': '+e.message)}};
+ tryDo('settings',()=>{const c=MEM.cfg;if(!isObj(c))return;CFG_KEYS.forEach(k=>{const v=c[k];if(v===undefined||v===null)return;if(Array.isArray(def[k])?Array.isArray(v)&&v.every(x=>Array.isArray(x)&&x.length===2):isObj(def[k])?isObj(v):typeof v===typeof def[k])CFG[k]=v})});
+ tryDo('owner mapping',()=>{const o=MEM.own;if(!isObj(o))return;OWNKEY=S(o.OWNKEY);OWN=isObj(o.OWN)?o.OWN:{};FB=S(o.FB);DAYS=+o.DAYS>0?+o.DAYS:5});
+ tryDo('queries',()=>{const q=MEM.q;if(!isObj(q))return;Q={};Object.keys(q).forEach(o=>{const x=q[o];if(isObj(x)&&x.st&&x.sent&&x.dl)Q[o]=Object.assign({items:[]},x,{items:Array.isArray(x.items)?x.items:[]})})});
+ tryDo('Udyam results',()=>{if(isObj(MEM.udr))UDR=MEM.udr});
+ tryDo('library',()=>{const l=MEM.lib;if(Array.isArray(l)&&l.length&&l.every(c=>isObj(c)&&c.id&&c.t&&typeof c.rxs==='string'&&Array.isArray(c.tags))){l.forEach(c=>new RegExp(c.rxs));INS=l}});
+ tryDo('report basket',()=>{const r=MEM.rail;if(!isObj(r))return;BMK=Array.isArray(r.BMK)?r.BMK:[];BASK=Array.isArray(r.BASK)?r.BASK:[];OBS=isObj(r.OBS)?r.OBS:{};EXS=isObj(r.EXS)?r.EXS:null});
+ UDI=+ls('vmv_udidx')||0;
+}
+new MutationObserver(()=>document.body.classList.toggle('rail',$('rail').classList.contains('open'))).observe($('rail'),{attributes:true,attributeFilter:['class']});
+if(ls('vmv_rail')==='1')$('rail').classList.add('open');
+go('upload');
+storesLoaded.then(()=>{hydrate()}).catch(e=>console.warn('Storage load failed: '+e.message)).then(()=>{renderAll();renderTrail()}).catch(e=>showErr('Startup error: '+e.message+' (try clearing site data for this page)'));
+
+</script>
+</body></html>
